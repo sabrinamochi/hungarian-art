@@ -1,0 +1,29 @@
+{% extends '_layouts/base.nunjucks' %}
+
+{% import "_modules/link/link.nunjucks" as link %}
+{% block headline %}Title{% endblock %}
+{% block subline %}A story that's never been told before. {% endblock %}
+{% block byline %}By Szu Yu Chen {% endblock %}
+
+{% block content %}
+  <div class="main-container">
+    <div>
+      <p>
+        Take a look at the {{link.content({
+          href: 'https://github.com/larsonjj/generator-yeogurt#yeogurt-generator---',
+          text: 'documentation'
+        })}} and start mixing up something awesome.
+      </p>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scrollcontent %}
+  <div class='scroll__graphic'></div>
+  <div class='scroll__text'>
+    <div class='step' data-step='firstStep'>
+      <p>sabrinamochi sabrinamochi sabrinamochi sabrinamochi sabrinamochi</p>
+    </div>
+  </div>
+{% endblock %}
+

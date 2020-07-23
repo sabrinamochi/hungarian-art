@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8"/>
+    <title>szuyu-project-starter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="styles/main.css">
+    {% block stylesheets %}{% endblock %}
+
+  </head>
+  <body>
+   <nav></nav>
+    <header>
+        <h1>{% block headline %}{% endblock %}</h1>
+        <p class='subline'>
+            {% block subline %}{% endblock %}
+        </p>
+        <p class="byline">
+            {% block byline %}{% endblock %}
+        </p>
+        <div class="pubdate">
+            {% block pubdate %}{% endblock %}
+        </div>
+    </header>
+    <main>
+      <section id="scrollcontent">
+       {% block scrollcontent %}{% endblock %}
+      </section>
+    </main>
+   
+    {% block scripts %}{% endblock %}
+    <script src="scripts/main.js"></script>
+  </body>
+</html>
