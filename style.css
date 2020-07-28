@@ -1,0 +1,21 @@
+body {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+#chart {
+    position: relative;
+}
+
+.text-block {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.first-x, .sec-x, .third-x, .fourth-x, .fifth-x {
+    display: inline-block;
+    position: absolute;
+    font-size: 14px;
+}
