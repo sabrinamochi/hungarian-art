@@ -16,6 +16,10 @@ const textWidth = 20;
 const strokeWidth = 1;
 const opac = 0.35;
 
+const increasedButton = d3.select("#increased");
+const decreasedButton = d3.select("#decreased");
+const flatButton = d3.select("#flat");
+
 function drawChart(data, list){
     svg.attr("width", width)
         .attr("height", height);
@@ -23,6 +27,8 @@ function drawChart(data, list){
     const groupedData = d3.nest()
         .key(d => d.artist)
         .entries(data);
+
+    const numOfArtists = groupedData.length;
     
     const chart = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
@@ -119,7 +125,7 @@ function drawChart(data, list){
         return d.type == list[3]|| 
                 d.type == list[4]
     })
-
+    
     const linesOne = chart.append("g").selectAll(".one")
         .data(nestedData(lineOneData))
           .enter().append("path")
@@ -145,6 +151,32 @@ function drawChart(data, list){
           .attr('class', 'four')
           .attr('d', d => lineGeneratorFour(d.values));
     
+    function calVariance(data){
+        let pct; 
+        if (data.values[0].type == "prestige_Top10%_rank" && data.values[1].type == "prestige_avg_rank") {
+            pct = (+data.values[0].number - (+data.values[1].number))/numOfArtists;
+        } else {
+            pct = (+data.values[1].number - (+data.values[0].number))/numOfArtists;
+        }
+        return pct;
+    }        
+
+    function colorByVariance(num){
+        
+        const pct = calVariance(num);
+        
+        if (pct >= 0.1) {
+            return "#58a4b0"
+            // return "none"
+        } else if (pct <= (-0.1)){
+            return "#373f51"
+            // return "none"
+        } else {
+            return "#a9bcd0"
+            // return "none"
+        }
+        // console.log(pct)
+    }
 
     d3.selectAll("path")
         .attr("fill", "none")
@@ -152,7 +184,7 @@ function drawChart(data, list){
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
         .attr("opacity", opac)
-        .attr("stroke", "teal")
+        .attr("stroke", d => colorByVariance(d))
         .on("mouseover", d => {
             d3.select(".text-block")
                 .html(`${d.key}`);
@@ -162,7 +194,7 @@ function drawChart(data, list){
                     if (e.key == d.key) {
                         return opac*2
                     } else {
-                        return opac/2
+                        return opac/4
                     }
                 })
                 .attr("stroke-width",  e => {
@@ -176,12 +208,58 @@ function drawChart(data, list){
         .on("mouseout", d => {
             d3.selectAll("path")
                 .attr("opacity", opac)
-                .attr("stroke-width", strokeWidth)
+                .attr("stroke-width", strokeWidth);
+
+            d3.select(".text-block")
+                .html(` `);
+            
         }) 
     //   .attr("stroke", (d, i) => {
     //     const t = i / groupedData.length;
     //     return `${color(t)}`;
     //  })
+
+    increasedButton.on("click", () => {
+        d3.selectAll("path")
+                .attr("opacity", e => {
+                    const pct = calVariance(e);
+        
+                    if (pct >= 0.1) {
+                        return opac
+                        // return "none"
+                    } else {
+                        return 0
+                    }
+                })
+    })
+
+    decreasedButton.on("click", () => {
+        d3.selectAll("path")
+                .attr("opacity", e => {
+                    const pct = calVariance(e);
+        
+                    if (pct <= -0.1) {
+                        return opac
+                        // return "none"
+                    } else {
+                        return 0
+                    }
+                })
+    })
+
+    flatButton.on("click", () => {
+        d3.selectAll("path")
+                .attr("opacity", e => {
+                    const pct = calVariance(e);
+                    if ( pct < 0.1 && pct > -0.1) {
+                        return opac
+                        // return "none"
+                    } else {
+                        return 0
+                    }
+                })
+    })
+    
 
 
     const texts = chart.append("g").selectAll("text")
@@ -194,7 +272,7 @@ function drawChart(data, list){
            .attr("font-family", "helvetica")
            .attr("text-anchor", "middle")
         //    .attr("baseline-shift", "-50%")
-        //    .attr("fill", d => color(d.artist))
+        //    .attr("fill", d => color(d.artist));
         
 }
 

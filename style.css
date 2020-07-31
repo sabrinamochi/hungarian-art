@@ -1,5 +1,5 @@
 body {
-    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 #chart {
@@ -18,4 +18,34 @@ body {
     display: inline-block;
     position: absolute;
     font-size: 14px;
+}
+
+.legend{
+    margin-left: 10%;
+}
+
+ul {
+    list-style: none;
+    font-size: 20px;
+    padding-left: 0;
+}
+
+li > span {
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    margin: 2px;
+    transform: translate(50%, 20%);
+}
+
+#increased {
+    background: #58a4b0;
+}
+
+#decreased {
+    background: #373f51;
+}
+
+#flat {
+    background:#a9bcd0;
 }
