@@ -16,7 +16,7 @@ h1 {
     text-align: center;
 }
 
-.text-block, .text-block3, .text-block2 {
+.text-block {
     /* position: absolute;
     top: 0;
     left: 0; */
@@ -24,8 +24,7 @@ h1 {
     text-align: center;
 }
 
-.first-x, .sec-x, .third-x, .fourth-x, .fifth-x,
-.first2-x, .sec2-x, .third2-x, .fourth2-x, .fifth2-x {
+.first-x, .sec-x, .third-x, .fourth-x, .fifth-x{
     display: inline-block;
     position: absolute;
     font-size: 14px;
