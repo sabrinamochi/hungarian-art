@@ -241,7 +241,7 @@ function drawChart(data, list){
             })
            .attr("font-family", "helvetica")
            .attr("text-anchor", "middle")
-           .attr("opacity", 1)
+           .attr("opacity", 0.5)
         //    .attr("baseline-shift", "-50%")
         //    .attr("fill", d => color(d.artist));
 
