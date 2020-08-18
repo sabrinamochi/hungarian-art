@@ -2,19 +2,30 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-#chart {
-    position: relative;
+h1 {
+    text-align: center;
 }
 
-.text-block {
-    position: absolute;
+.separate {
+    height: 10vh;
+    width: 100%;
+}
+
+#chart {
+    position: relative;
+    text-align: center;
+}
+
+.text-block, .text-block3, .text-block2 {
+    /* position: absolute;
     top: 0;
-    left: 0;
+    left: 0; */
     width: 100%;
     text-align: center;
 }
 
-.first-x, .sec-x, .third-x, .fourth-x, .fifth-x {
+.first-x, .sec-x, .third-x, .fourth-x, .fifth-x,
+.first2-x, .sec2-x, .third2-x, .fourth2-x, .fifth2-x {
     display: inline-block;
     position: absolute;
     font-size: 14px;
@@ -48,4 +59,13 @@ li > span {
 
 #flat {
     background:#a9bcd0;
+}
+
+svg text {
+    fill: gray;
+    /* opacity: 0.5; */
+}
+
+button {
+    cursor: pointer;
 }
