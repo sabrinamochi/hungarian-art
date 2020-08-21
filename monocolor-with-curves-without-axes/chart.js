@@ -20,6 +20,7 @@ const opac = 1;
 
 function drawChart(data, list){
 
+
     svg.attr("width", width)
         .attr("height", height);
 
@@ -176,23 +177,6 @@ function drawChart(data, list){
         return pct;
     }        
 
-    function colorByVariance(num){
-        
-        const pct = calVariance(num);
-        
-        if (pct >= 0.1) {
-            return "#58a4b0"
-            // return "none"
-        } else if (pct <= (-0.1)){
-            return "#373f51"
-            // return "none"
-        } else {
-            return "#a9bcd0"
-            // return "none"
-        }
-        // console.log(pct)
-    }
-
     const gradientColor = d3.scaleSequential(d3.interpolatePlasma)
     .domain([0, d3.max(data, d => +d.number)]);
 
@@ -252,26 +236,7 @@ function drawChart(data, list){
 
     const artists = nestedData(lineOneData).map(d => formatName(d.key));
     const shuffledArtists = shuffle(artists);
-        
-    // artists.forEach((d, i) => {
-    //         d3.selectAll(`.${d}`)
-    //             .transition()
-    //             .duration(1000)
-    //             .transition()
-    //             .delay(1000 + i * t)
-    //             .attr("opacity", opac)
-    //             .on("end", () => {
-    //                 d3.select("h1")
-    //                 .html(d);
-    //             })
-    //         d3.selectAll(`.${d}-text`)
-    //             .transition()
-    //             .duration(1000)
-    //             .transition()
-    //             .delay(1000 + i * t)
-    //             .attr("opacity", 1)
-                    
-    //     })
+    
 
 
     buttons.on("click", (d,i) => {

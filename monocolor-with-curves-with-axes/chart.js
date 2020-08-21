@@ -17,27 +17,29 @@ const strokewidth = 0.6;
 const selectedStrokeWidth = 3;
 const opac = 1;
 
+svg.attr("width", width)
+    .attr("height", height);
 
-function drawChart(data, list){
+const chart = svg.append("g")
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    svg.attr("width", width)
-        .attr("height", height);
 
-    const groupedData = d3.nest()
-        .key(d => d.artist)
-        .entries(data);
+function drawChart(dataset){
 
-    const numOfArtists = groupedData.length;
-    
-    const chart = svg.append("g")
-        .attr("transform", `translate(${margin.left}, ${margin.top})`);
+    const x1 = "exhibitions_solo_rank";
+    const x2 = "exhibitions_total_rank";
+    const x3 = "prestige_rank";
+    const x4 =  "prestige_avg_rank";
+    const x5 =  "prestige_Top10%_rank";
+
+    const list = [x1, x2, x3, x4, x5]
 
     const xScaleText = d3.scalePoint()
         .domain(list)
         .range([0, boundedwidth]);
 
     const yScale = d3.scaleLinear()
-        .domain([1, d3.max(data, d => +d.number)])
+        .domain([1, d3.max(dataset, d => +d.number)])
         .range([margin.top, boundedheight - margin.bottom]);
     
     const xScaleOne = d3.scalePoint()
@@ -55,8 +57,6 @@ function drawChart(data, list){
     const xScaleFour = d3.scalePoint()
     .domain([list[3], list[4]])
     .range([((boundedwidth/2 - textwidth)/2 + boundedwidth/2 + textwidth), (boundedwidth - textwidth/2)])
-
-    // const color = d3.interpolateSpectral;
 
     d3.select(".first-x")
         .html(`${list[0]}`)
@@ -94,29 +94,26 @@ function drawChart(data, list){
         .x(d => xScaleFour(d.type))
         .y(d => yScale(+d.number))
 
-    function nestedData(data){
-        const nested = d3.nest()
-                .key(d => d.artist)
-                .entries(data);
-        return nested;
-    }
+    const groupedData = d3.nest()
+        .key(d => d.artist)
+        .entries(dataset);
 
-    const lineOneData = data.filter(d => {
+    const lineOneData = dataset.filter(d => {
         return d.type == list[0] || 
                 d.type == list[1]
     })
 
-    const lineTwoData = data.filter(d => {
+    const lineTwoData = dataset.filter(d => {
         return d.type == list[1] || 
                 d.type == list[2]
     })
 
-    const lineThreeData = data.filter(d => {
+    const lineThreeData = dataset.filter(d => {
         return d.type == list[2] || 
                 d.type == list[3]
     })
 
-    const lineFourData = data.filter(d => {
+    const lineFourData = dataset.filter(d => {
         return d.type == list[3]|| 
                 d.type == list[4]
     })
@@ -136,222 +133,222 @@ function drawChart(data, list){
         return newData;
     }
 
+    function returnSourceTarget2(data){
+        const newData = [];
+        for (var i = 0; i < data.length; i++) {
+            for (var j = i + 1; j < data.length; j++) {
+                if (data[i].artist === data[j].artist) {
+                    newData.push({
+                        source: {name: data[j].artist, number: data[j].number, type: data[j].type},
+                        target: {name: data[i].artist, number: data[i].number, type: data[i].type}
+                    });
+                }
+            }
+        }
+        return newData;
+    }
+    
+
     const lineOneLinks = returnSourceTarget(lineOneData);
     const lineTwoLinks = returnSourceTarget(lineTwoData);
     const lineThreeLinks = returnSourceTarget(lineThreeData);
-    const lineFourLinks = returnSourceTarget(lineFourData);
-    
-    const linesOne = chart.append("g").selectAll(".one")
-        .data(lineOneLinks)
-          .enter().append("path")
-          .attr('class', 'one')
-          .attr('d',lineGeneratorOne)
+    const lineFourLinks = returnSourceTarget2(lineFourData);
 
-
-    const linesTwo = chart.append("g").selectAll(".two")
-        .data(lineTwoLinks)
-          .enter().append("path")
-          .attr('class', 'two')
-          .attr('d', lineGeneratorTwo);
-
-    const linesThree = chart.append("g").selectAll(".three")
-        .data(lineThreeLinks)
-          .enter().append("path")
-          .attr('class', 'three')
-          .attr('d', lineGeneratorThree);
-
-    const linesFour = chart.append("g").selectAll(".four")
-        .data(lineFourLinks)
-          .enter().append("path")
-          .attr('class', 'four')
-          .attr('d', d => lineGeneratorFour(d));
-    
-    function calVariance(data){
-        let pct; 
-        if (data.values[0].type == "prestige_Top10%_rank" && data.values[1].type == "prestige_avg_rank") {
-            pct = (+data.values[0].number - (+data.values[1].number))/numOfArtists;
-        } else {
-            pct = (+data.values[1].number - (+data.values[0].number))/numOfArtists;
-        }
-        return pct;
-    }        
-
-    function colorByVariance(num){
-        
-        const pct = calVariance(num);
-        
-        if (pct >= 0.1) {
-            return "#58a4b0"
-            // return "none"
-        } else if (pct <= (-0.1)){
-            return "#373f51"
-            // return "none"
-        } else {
-            return "#a9bcd0"
-            // return "none"
-        }
-        // console.log(pct)
-    }
-
-    const gradientColor = d3.scaleSequential(d3.interpolatePlasma)
-    .domain([0, d3.max(data, d => +d.number)]);
-
-    const fontSizeScale = d3.scaleLinear()
-        .domain(d3.extent(data, d => +d.number))
-        .range([4, 0.5])
-
-    const strokeSizeScale = d3.scaleLinear()
-        .domain(d3.extent(data, d => +d.number))
-        .range([2.5, 0.5])
-
+    const linesOne = chart.append("g").selectAll(".one");
+    const linesTwo = chart.append("g").selectAll(".two");
+    const linesThree = chart.append("g").selectAll(".three");
+    const linesFour = chart.append("g").selectAll(".four");
 
     const formatName = (data) => {
-        return data.replace(".", "")
-            .replace("(", "")
-            .replace(")", "")
-            .replace("&", "")
-            .replace(" ", "-");
+        return data.replace(" ", "-")
+            .replace(".", "-")
+            .replace("(", "-")
+            .replace(")", "-")
+            .replace("&", "-")
+            .replace(" ", "-")
+            .replace(",", "-");
     }
 
-    d3.selectAll("path")
-            .attr("class", "lineGroup")
-            .attr('class', d => formatName(d.source.name))
-        .attr("fill", "none")
-        // .attr("stroke-width", d => {
-        //     return strokeSizeScale((+d.values[0].number + (+d.values[1].number)) / 2)
-            
-        // })
-        .attr("stroke-width", strokewidth)
-        .attr("stroke-linejoin", "round")
-        .attr("stroke-linecap", "round")
-        .attr("opacity", 0)
-        // .attr("stroke", d => colorByVariance(d))
-        .attr("stroke","#70c1b3")
+    linesOne.data(lineOneLinks)
+          .enter().append("path")
+          .attr('class', 'one')
+          .attr('id', d => `${formatName(d.source.name)}-for-curves-1`)
+          .attr('d',lineGeneratorOne)
+
+    linesTwo.data(lineTwoLinks)
+          .enter().append("path")
+          .attr('class', 'two')
+          .attr('id', d => `${formatName(d.source.name)}-for-curves-2`)
+          .attr('d', lineGeneratorTwo);
+
+
+    linesThree.data(lineThreeLinks)
+          .enter().append("path")
+          .attr('class', 'three')
+          .attr('id', d => `${formatName(d.source.name)}-for-curves-3`)
+          .attr('d', lineGeneratorThree);
+
+
+    linesFour.data(lineFourLinks)
+          .enter().append("path")
+          .attr('class', 'four')
+          .attr('id', d => `${formatName(d.source.name)}-for-curves-4`)
+          .attr('d', d => lineGeneratorFour(d));      
     
-    const texts = chart.append("g");
-    texts.selectAll("text")
-         .data(data, d => d.artist)
-           .enter().append("text")
-           .attr("class", d => `${formatName(d.artist)}-text`)
-           .attr("x", d => xScaleText(d.type))
-           .attr("y", d => yScale(+d.number))
-           .text(d =>  d.artist)
-           .attr("font-size", d => {
-            return fontSizeScale(+d.number)
+    const fontSizeScale = d3.scaleLinear()
+        .domain(d3.extent(dataset, d => +d.number))
+        .range([2, 0.5])
+
+    d3.selectAll("path")
+      .attr("class", "lineGroup")
+      .attr('class', d => formatName(d.source.name))
+      .attr("fill", "none")
+      .attr("stroke-width", strokewidth)
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-linecap", "round")
+      .attr("opacity", 0)
+      .attr("stroke","#70c1b3")
+  
+  const texts = chart.append("g");
+  texts.selectAll("text")
+       .data(dataset, d => d.artist)
+         .enter().append("text")
+         .attr("class", d => `${formatName(d.artist)}-text`)
+         .attr("x", d => xScaleText(d.type))
+         .attr("y", d => yScale(+d.number))
+         .text(d =>  d.artist)
+         .attr("font-size", d => {
+          return fontSizeScale(+d.number)
+          })
+         .attr("font-family", "helvetica")
+         .attr("text-anchor", "middle")
+         .attr("opacity", opac)
+      //    .attr("baseline-shift", "-50%")
+      //    .attr("fill", d => color(d.artist));    
+    const curveTexts = chart.append("g");
+    curveTexts.selectAll("text")
+        .data(dataset, d => d.artist)
+        .enter().append("text")
+            .attr("class", "curve-texts")
+            .attr("id", d => `${formatName(d.artist)}-curve-text`)
+            .attr("opacity", 0)
+                
+
+      let numOfArtists =  groupedData.length;
+      const numOfArtistsArr = [...Array(numOfArtists).keys()]
+    
+      function getUniqueArtists(number){
+            const tmp = numOfArtistsArr.slice(numOfArtistsArr)  
+            const rem = [];
+    
+            for (let i = 0; i < number; i++){
+                const index = Math.floor(Math.random()*tmp.length)
+                const removed = tmp.splice(index, 1);
+                rem.push(removed[0]);
+            }
+            return rem;
+        }
+    
+      function getNewData(arr, indices) {
+            const newData = arr.filter(function(el, index) {
+              return indices.indexOf(index) !== -1;
             })
-           .attr("font-family", "helvetica")
-           .attr("text-anchor", "middle")
-           .attr("opacity", 0.5)
-        //    .attr("baseline-shift", "-50%")
-        //    .attr("fill", d => color(d.artist));
+           return newData
+          }
+    
+    //  let firstTime = 0;
+     let selectedDataset= [];
+     const t = 2000;
+     const numOfLineToShow = 4;
+     
+     function selectArtists(){
+    
+            if(numOfArtistsArr.length < 2){
+                clearInterval(timing);
+                console.log("done!")
+            }
 
-    const buttons = d3.selectAll("button");
-    let buttonText,
-        t = 5 * 1000;
-
-
-    const artists = nestedData(lineOneData).map(d => formatName(d.key));
-    const shuffledArtists = shuffle(artists);
-        
-    // artists.forEach((d, i) => {
-    //         d3.selectAll(`.${d}`)
-    //             .transition()
-    //             .duration(1000)
-    //             .transition()
-    //             .delay(1000 + i * t)
-    //             .attr("opacity", opac)
-    //             .on("end", () => {
-    //                 d3.select("h1")
-    //                 .html(d);
-    //             })
-    //         d3.selectAll(`.${d}-text`)
-    //             .transition()
-    //             .duration(1000)
-    //             .transition()
-    //             .delay(1000 + i * t)
-    //             .attr("opacity", 1)
-                    
-    //     })
-
-
-    buttons.on("click", (d,i) => {
-
-        d3.select("h1")
-            .html("Hungarian Artists Ranking")
+            const selectedArtists = getUniqueArtists(numOfLineToShow);
+            selectedDataset = [];
+            for (let i = 0; i < selectedArtists.length; i++){
+                    numOfArtistsArr.splice(numOfArtistsArr.indexOf(selectedArtists[i]), 1);
+                    selectedDataset.push(selectedArtists[i])
+                }
+      
+            // if (firstTime == 0){
+            //     const selectedArtists = getUniqueArtists(5);
+    
+            //     for (let i = 0; i < selectedArtists.length; i++){
+            //         numOfArtistsArr.splice(numOfArtistsArr.indexOf(selectedArtists[i]), 1);
+            //         selectedDataset.push(selectedArtists[i])
+            //     }
+                
+            // } else {
+            //     const selectedArtists = getUniqueArtists(1);
+            //     selectedDataset.shift()
+            //     for (let i = 0; i < selectedArtists.length; i++){
+            //         numOfArtistsArr.splice(numOfArtistsArr.indexOf(selectedArtists[i]), 1);
+            //         selectedDataset.push(selectedArtists[i])
+            //      }
+            // }
+    
+        // firstTime += 1;
+    
+        const data = getNewData(groupedData, selectedDataset);
+    
+        const artists =  data.map(d => formatName(d.key));
+        console.log(artists)
 
         d3.selectAll("path")
-             .on("mouseover", null)
-            .on("mouseout", null)
+              .on("mouseover", null)
+              .on("mouseout", null)
 
-        const selButton = buttons.nodes()[i];
-        buttonText = selButton.innerHTML;
- 
-        if (buttonText == "All") {
+        d3.selectAll("path")
+              .transition()
+              .duration(t / 2)
+              .attr("opacity", 0)
+              
+
+        d3.selectAll(".curve-texts")
+            .transition()
+            .duration(t / 2)
+            .attr("opacity", 0)
 
             artists.forEach((d, i) => {
-                d3.selectAll(`.${d}`).interrupt();
-            })
-            
-            d3.selectAll("path")
-            .attr("opacity", opac)
-            .on("mouseover", d => {
-                // console.log(d)
-                d3.select("h1")
-                    .html(`${d.source.name}`);
+                  d3.selectAll(`.${d}`)
+                      .transition()
+                      .duration(t) 
+                      .transition()
+                      .delay(t + i * t)
+                      .attr("opacity", opac)
+                      .on("end", () => {
+                        // d3.select(`${formatName(d)}-curve-text`)  
+                      })       
+                    const index = i+1;
+                    d3.select(`#${d}-curve-text`)  
+                        .append("textPath")
+                            .attr("xlink:href", d => `#${formatName(d.artist)}-for-curves-${index}`)
+                            .text(d => d.artist);
+
+                    d3.select(`#${d}-curve-text`)                       
+                        .transition()
+                        .duration(t) 
+                        .transition()
+                        .delay(t + i * t)
+                        .attr("opacity", opac)   
+                                 
+                })
     
-                d3.selectAll("path")
-                    .attr("opacity", e => {
-                        if (e.source.name == d.source.name) {
-                            return opac*2
-                        } else {
-                            return opac/4
-                        }
-                    })
-                    .attr("stroke-width",  e => {
-                        if (e.source.name == d.source.name) {
-                            return strokewidth*4
-                        } else {
-                            return strokewidth/2
-                        }
-                    })
-            })   
-            .on("mouseout", d => {
-                d3.selectAll("path")
-                    .attr("opacity", opac)
-                    .attr("stroke-width", strokewidth)
-    
-                d3.select("h1")
-                    .html(`Hungarian Artists Ranking`);
-                
-            }) 
-            
-            d3.selectAll("text").attr("opacity", opac);
-        
         }
-        else {
-            
-            t = parseFloat(buttonText.replace("s", "")) * 1000;
+        selectArtists();
+        const timing = setInterval(selectArtists, 12 * t);
 
-            d3.selectAll("path").attr("opacity", 0);
+   
+ }
 
-            artists.forEach((d, i) => {
-                d3.selectAll(`.${d}`)
-                    .transition()
-                    .duration(1000) 
-                    .transition()
-                    .delay(1000 + i * t)
-                    .attr("opacity", opac)
-                    .on("end", () => {
-                        d3.select("h1")
-                        .html(d)
-                    })
-                        
-        })
-     }
-    })
 
+ 
     
-}
 
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -375,10 +372,8 @@ function shuffle(array) {
 function loadData(data){
     // console.log(data);
     const typeList = [...new Set(data.map(item => item.type))];
-    const shuffledList = shuffle(typeList);
-    const assignedList = ["exhibitions_solo_rank", "exhibitions_total_rank", "prestige_rank", "prestige_avg_rank", "prestige_Top10%_rank"];
-    drawChart(data, assignedList);
+    drawChart(data);
 }
 
-d3.csv("https://raw.githubusercontent.com/sabrinamochi/hungarian-art/master/data/d3_structured_artist_rankings_united.csv")
+d3.csv("../data/d3_structured_artist_rankings_united.csv")
     .then(loadData);
