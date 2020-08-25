@@ -98,26 +98,6 @@ function drawChart(dataset){
         .key(d => d.artist)
         .entries(dataset);
 
-    const lineOneData = dataset.filter(d => {
-        return d.type == list[0] || 
-                d.type == list[1]
-    })
-
-    const lineTwoData = dataset.filter(d => {
-        return d.type == list[1] || 
-                d.type == list[2]
-    })
-
-    const lineThreeData = dataset.filter(d => {
-        return d.type == list[2] || 
-                d.type == list[3]
-    })
-
-    const lineFourData = dataset.filter(d => {
-        return d.type == list[3]|| 
-                d.type == list[4]
-    })
-
     function returnSourceTarget(data){
         const newData = [];
         for (var i = 0; i < data.length; i++) {
@@ -147,17 +127,11 @@ function drawChart(dataset){
         }
         return newData;
     }
-    
 
-    const lineOneLinks = returnSourceTarget(lineOneData);
-    const lineTwoLinks = returnSourceTarget(lineTwoData);
-    const lineThreeLinks = returnSourceTarget(lineThreeData);
-    const lineFourLinks = returnSourceTarget2(lineFourData);
-
-    const linesOne = chart.append("g").selectAll(".one");
-    const linesTwo = chart.append("g").selectAll(".two");
-    const linesThree = chart.append("g").selectAll(".three");
-    const linesFour = chart.append("g").selectAll(".four");
+    const linesOneGroup = chart.append("g");
+    const linesTwoGroup = chart.append("g");
+    const linesThreeGroup = chart.append("g");
+    const linesFourGroup = chart.append("g");
 
     const formatName = (data) => {
         return data.replace(" ", "-")
@@ -168,71 +142,30 @@ function drawChart(dataset){
             .replace(" ", "-")
             .replace(",", "-");
     }
-
-    linesOne.data(lineOneLinks)
-          .enter().append("path")
-          .attr('class', 'one')
-          .attr('id', d => `${formatName(d.source.name)}-for-curves-1`)
-          .attr('d',lineGeneratorOne)
-
-    linesTwo.data(lineTwoLinks)
-          .enter().append("path")
-          .attr('class', 'two')
-          .attr('id', d => `${formatName(d.source.name)}-for-curves-2`)
-          .attr('d', lineGeneratorTwo);
-
-
-    linesThree.data(lineThreeLinks)
-          .enter().append("path")
-          .attr('class', 'three')
-          .attr('id', d => `${formatName(d.source.name)}-for-curves-3`)
-          .attr('d', lineGeneratorThree);
-
-
-    linesFour.data(lineFourLinks)
-          .enter().append("path")
-          .attr('class', 'four')
-          .attr('id', d => `${formatName(d.source.name)}-for-curves-4`)
-          .attr('d', d => lineGeneratorFour(d));      
     
     const fontSizeScale = d3.scaleLinear()
         .domain(d3.extent(dataset, d => +d.number))
         .range([2, 0.5])
 
-    d3.selectAll("path")
-      .attr("class", "lineGroup")
-      .attr('class', d => formatName(d.source.name))
-      .attr("fill", "none")
-      .attr("stroke-width", strokewidth)
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-linecap", "round")
-      .attr("opacity", 0)
-      .attr("stroke","#70c1b3")
-  
-  const texts = chart.append("g");
-  texts.selectAll("text")
-       .data(dataset, d => d.artist)
-         .enter().append("text")
-         .attr("class", d => `${formatName(d.artist)}-text`)
-         .attr("x", d => xScaleText(d.type))
-         .attr("y", d => yScale(+d.number))
-         .text(d =>  d.artist)
-         .attr("font-size", d => {
-          return fontSizeScale(+d.number)
-          })
-         .attr("font-family", "helvetica")
-         .attr("text-anchor", "middle")
-         .attr("opacity", opac)
-      //    .attr("baseline-shift", "-50%")
-      //    .attr("fill", d => color(d.artist));    
-    const curveTexts = chart.append("g");
-    curveTexts.selectAll("text")
-        .data(dataset, d => d.artist)
-        .enter().append("text")
-            .attr("class", "curve-texts")
-            .attr("id", d => `${formatName(d.artist)}-curve-text`)
-            .attr("opacity", 0)
-                
+    const texts = chart.append("g");
+    texts.selectAll("text")
+          .data(dataset, d => d.artist)
+            .enter().append("text")
+            .attr("class", d => `${formatName(d.artist)}-text`)
+            .attr("x", d => xScaleText(d.type))
+            .attr("y", d => yScale(+d.number))
+            .text(d =>  d.artist)
+            .attr("font-size", d => {
+             return fontSizeScale(+d.number)
+             })
+            .attr("font-family", "helvetica")
+            .attr("text-anchor", "middle")
+            .attr("opacity", opac);
+         //    .attr("baseline-shift", "-50%")
+         //    .attr("fill", d => color(d.artist)); 
+
+     
+     const curveTextsGroup = chart.append("g");                
 
       let numOfArtists =  groupedData.length;
       const numOfArtistsArr = [...Array(numOfArtists).keys()]
@@ -250,9 +183,11 @@ function drawChart(dataset){
         }
     
       function getNewData(arr, indices) {
-            const newData = arr.filter(function(el, index) {
-              return indices.indexOf(index) !== -1;
-            })
+            const newData =[]
+            newData.splice(0, 0, arr[indices[0]])
+            newData.splice(1, 0, arr[indices[1]])
+            newData.splice(2, 0, arr[indices[2]])
+            newData.splice(3, 0, arr[indices[3]])
            return newData
           }
     
@@ -260,6 +195,7 @@ function drawChart(dataset){
      let selectedDataset= [];
      const t = 2000;
      const numOfLineToShow = 4;
+     let firstTime = 0;
      
      function selectArtists(){
     
@@ -269,79 +205,265 @@ function drawChart(dataset){
             }
 
             const selectedArtists = getUniqueArtists(numOfLineToShow);
-            selectedDataset = [];
-            for (let i = 0; i < selectedArtists.length; i++){
+
+            if (firstTime == 0){
+                const selectedArtists = getUniqueArtists(4);
+    
+                for (let i = 0; i < selectedArtists.length; i++){
                     numOfArtistsArr.splice(numOfArtistsArr.indexOf(selectedArtists[i]), 1);
                     selectedDataset.push(selectedArtists[i])
                 }
-      
-            // if (firstTime == 0){
-            //     const selectedArtists = getUniqueArtists(5);
-    
-            //     for (let i = 0; i < selectedArtists.length; i++){
-            //         numOfArtistsArr.splice(numOfArtistsArr.indexOf(selectedArtists[i]), 1);
-            //         selectedDataset.push(selectedArtists[i])
-            //     }
                 
-            // } else {
-            //     const selectedArtists = getUniqueArtists(1);
-            //     selectedDataset.shift()
-            //     for (let i = 0; i < selectedArtists.length; i++){
-            //         numOfArtistsArr.splice(numOfArtistsArr.indexOf(selectedArtists[i]), 1);
-            //         selectedDataset.push(selectedArtists[i])
-            //      }
-            // }
+            } else {
+                const selectedArtists = getUniqueArtists(1);
+                selectedDataset.shift()
+                for (let i = 0; i < selectedArtists.length; i++){
+                    numOfArtistsArr.splice(numOfArtistsArr.indexOf(selectedArtists[i]), 1);
+                    selectedDataset.push(selectedArtists[i])
+                 }
+            }
     
-        // firstTime += 1;
-    
-        const data = getNewData(groupedData, selectedDataset);
-    
-        const artists =  data.map(d => formatName(d.key));
-        console.log(artists)
+            firstTime += 1;
+      
 
-        d3.selectAll("path")
-              .on("mouseover", null)
-              .on("mouseout", null)
+        const data = getNewData(groupedData, selectedDataset); 
+        console.log(data)
+        let newDataset = [];
+        data.map(d => {
+            d.values.map(e => {
+                newDataset.push(e)
+            })
+        });
+        console.log(newDataset)
+        const lineOneData = newDataset.filter(d => {
+            return d.type == list[0] || 
+                    d.type == list[1]
+        })
+    
+        const lineTwoData = newDataset.filter(d => {
+            return d.type == list[1] || 
+                    d.type == list[2]
+        })
+    
+        const lineThreeData = newDataset.filter(d => {
+            return d.type == list[2] || 
+                    d.type == list[3]
+        })
+    
+        const lineFourData = newDataset.filter(d => {
+            return d.type == list[3]|| 
+                    d.type == list[4]
+        })
+        
+        const lineOneLinks = returnSourceTarget(lineOneData);
+        const lineTwoLinks = returnSourceTarget(lineTwoData);
+        const lineThreeLinks = returnSourceTarget(lineThreeData);
+        const lineFourLinks = returnSourceTarget2(lineFourData);
 
-        d3.selectAll("path")
-              .transition()
-              .duration(t / 2)
-              .attr("opacity", 0)
+        const linesOne = linesOneGroup.selectAll(".one")
+            .data(lineOneLinks, (d, i) => d.source.name);
+            
+        linesOne.enter().append("path")
+            .attr('id', d => `${formatName(d.source.name)}-for-curves-1`)
+            .attr('d',lineGeneratorOne)
+            .attr('class', 'one')
+            .attr("fill", "none")
+            .attr("stroke-width", strokewidth)
+            .attr("stroke-linejoin", "round")
+            .attr("stroke-linecap", "round")
+            .attr("stroke","#70c1b3")
+            .transition().duration(t)
+            .attr("opacity", 1)
+        // .merge(linesOne)
+        //     .attr('class', 'one')
+            // .attr("fill", "none")
+            // .attr("stroke-width", strokewidth)
+            // .attr("stroke-linejoin", "round")
+            // .attr("stroke-linecap", "round")
+            // .attr("stroke","#70c1b3")
+            
+        linesOne.exit()
+        .transition().duration(1000)
+        .attr("opacity", 0)
+        .remove()
+
+        const linesTwo = linesOneGroup.selectAll(".two")
+            .data(lineTwoLinks, (d, i) => d.source.name);
+            
+        linesTwo.enter().append("path")
+            .attr('id', d => `${formatName(d.source.name)}-for-curves-2`)
+            .attr('d',lineGeneratorTwo)
+            .attr('class', 'two')
+            .attr("fill", "none")
+            .attr("stroke-width", strokewidth)
+            .attr("stroke-linejoin", "round")
+            .attr("stroke-linecap", "round")
+            .attr("stroke","#70c1b3")
+            .transition().duration(t)
+            .attr("opacity", 1)
+        // .merge(linesTwo)
+        //     .attr('class', 'two')
+
+
+        linesTwo.exit()
+        .transition().duration(1000)
+        .attr("opacity", 0)
+        .remove()
+
+
+        const linesThree = linesThreeGroup.selectAll(".three")
+            .data(lineThreeLinks, (d, i) => d.source.name);
+            
+        linesThree.enter().append("path")
+            .attr('id', d => `${formatName(d.source.name)}-for-curves-3`)
+            .attr('d',lineGeneratorThree)
+            .attr('class', 'three')
+            .attr("fill", "none")
+            .attr("stroke-width", strokewidth)
+            .attr("stroke-linejoin", "round")
+            .attr("stroke-linecap", "round")
+            .attr("stroke","#70c1b3")
+            .transition().duration(t)
+            .attr("opacity", 1)
+        // .merge(linesThree)
+        //     .attr('class', 'three')
+
+
+        linesThree.exit()
+        .transition().duration(1000)
+        .attr("opacity", 0)
+        .remove()
+
+
+        const linesFour = linesFourGroup.selectAll(".four")
+            .data(lineFourLinks, (d,i) => d.source.name);
+            
+        linesFour.enter().append("path")
+            .attr('id', d => `${formatName(d.source.name)}-for-curves-4`)
+            .attr('d',lineGeneratorFour)
+            .attr('class', 'four')
+            .attr("fill", "none")
+            .attr("stroke-width", strokewidth)
+            .attr("stroke-linejoin", "round")
+            .attr("stroke-linecap", "round")
+            .attr("stroke","#70c1b3")
+            .transition().duration(t)
+            .attr("opacity", 1)
+        // .merge(linesFour)
+        //     .attr('class', 'four')
+
+
+        linesFour.exit()
+            .transition().duration(1000)
+            .attr("opacity", 0)
+            .remove()
+
+          
+         let curveTexts = curveTextsGroup.selectAll("text")
+            .data(newDataset, (d, i) => {
+                return i + d.artist
+                // console.log(i + d.artist)
+            })
+
+         curveTextsEnter = curveTexts.enter()
+            .append("text")
+             .attr("class", "curve-texts")
+             .attr("id", d => `${formatName(d.artist)}-curve-text`)
+         
+         curveTextsEnter.append("textPath")
+                            .attr("xlink:href", (d, i) => {
+                                const index = i % 4 + 1
+                                const firstGroup = i < newDataset.length / 4
+                                const secondGroup = (newDataset.length / 4 <= i) && (i < (newDataset.length / 4) * 2);
+                                const thirdGroup = ((newDataset.length / 4) * 2 <= i) && (i < (newDataset.length / 4) * 3);
+                                if (firstGroup) {
+                                   if (index == 1) {
+                                    return `#${formatName(d.artist)}-for-curves-${1}`
+                                   } else {
+                                       return;
+                                   }
+                                } else if (secondGroup){
+                                    if (index == 2) {
+                                    return `#${formatName(d.artist)}-for-curves-${2}`
+                                   } else {
+                                       return;
+                                   }
+                                } else if (thirdGroup){
+                                    if (index == 3) {
+                                    return `#${formatName(d.artist)}-for-curves-${3}`
+                                   } else {
+                                       return;
+                                   }
+                                } else {
+                                    if (index == 4){
+                                    return `#${formatName(d.artist)}-for-curves-${4}`
+                                    } else {
+                                        return;
+                                    }
+                                }
+                            })
+                            .text(d => d.artist)
+                            .transition().duration(t)
+                            .attr("opacity", 1)
+
+            // curveTexts = curveTextsEnter.merge(curveTexts)
+            
+            curveTexts.exit()
+            .transition().duration(1000)
+            .attr("opacity", 0)
+            .remove()
+
+        // d3.selectAll(".line")
+        //         .data(returnSourceTarget(data[0].values))
+        //         .enter().append("path")
+        //             .attr("class", "line")
+    
+ 
+        // console.log(artists)
+
+        // d3.selectAll("path")
+        //       .on("mouseover", null)
+        //       .on("mouseout", null)
+
+        // d3.selectAll("path")
+        //       .transition()
+        //       .duration(t / 2)
+        //       .attr("opacity", 0)
               
 
-        d3.selectAll(".curve-texts")
-            .transition()
-            .duration(t / 2)
-            .attr("opacity", 0)
+        // d3.selectAll(".curve-texts")
+        //     .transition()
+        //     .duration(t / 2)
+        //     .attr("opacity", 0)
 
-            artists.forEach((d, i) => {
-                  d3.selectAll(`.${d}`)
-                      .transition()
-                      .duration(t) 
-                      .transition()
-                      .delay(t + i * t)
-                      .attr("opacity", opac)
-                      .on("end", () => {
-                        // d3.select(`${formatName(d)}-curve-text`)  
-                      })       
-                    const index = i+1;
-                    d3.select(`#${d}-curve-text`)  
-                        .append("textPath")
-                            .attr("xlink:href", d => `#${formatName(d.artist)}-for-curves-${index}`)
-                            .text(d => d.artist);
+            // artists.forEach((d, i) => {
+            //       d3.selectAll(`.${d}`)
+            //           .transition()
+            //           .duration(t) 
+            //           .transition()
+            //           .delay(t + i * t)
+            //           .attr("opacity", opac)
+            //           .on("end", () => {
+            //             // d3.select(`${formatName(d)}-curve-text`)  
+            //           })       
+            //         const index = i+1;
+                    // d3.select(`#${d}-curve-text`)  
+                    //     .append("textPath")
+                    //         .attr("xlink:href", d => `#${formatName(d.artist)}-for-curves-${index}`)
+                    //         .text(d => d.artist);
 
-                    d3.select(`#${d}-curve-text`)                       
-                        .transition()
-                        .duration(t) 
-                        .transition()
-                        .delay(t + i * t)
-                        .attr("opacity", opac)   
+            //         d3.select(`#${d}-curve-text`)                       
+            //             .transition()
+            //             .duration(t) 
+            //             .transition()
+            //             .delay(t + i * t)
+            //             .attr("opacity", opac)   
                                  
-                })
+            //     })
     
         }
         selectArtists();
-        const timing = setInterval(selectArtists, 12 * t);
+        const timing = setInterval(selectArtists, 5 * t);
 
    
  }
@@ -377,3 +499,6 @@ function loadData(data){
 
 d3.csv("../data/d3_structured_artist_rankings_united.csv")
     .then(loadData);
+
+     
+  
