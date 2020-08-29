@@ -169,7 +169,7 @@ function drawChart(dataset){
 
       let numOfArtists =  groupedData.length;
       const numOfArtistsArr = [...Array(numOfArtists).keys()]
-    
+      
       function getUniqueArtists(number){
             const tmp = numOfArtistsArr.slice(numOfArtistsArr)  
             const rem = [];
@@ -183,31 +183,28 @@ function drawChart(dataset){
         }
     
       function getNewData(arr, indices) {
-            const newData =[]
-            newData.splice(0, 0, arr[indices[0]])
-            newData.splice(1, 0, arr[indices[1]])
-            newData.splice(2, 0, arr[indices[2]])
-            newData.splice(3, 0, arr[indices[3]])
+            const newData =[];
+            
+            for (let i = 0; i < numOfSelectedArtists; i++){
+                newData.splice(i, 0, arr[indices[i]])
+                
+            }
            return newData
           }
     
-    //  let firstTime = 0;
      let selectedDataset= [];
-     const t = 2000;
-     const numOfLineToShow = 4;
      let firstTime = 0;
      
-     function selectArtists(){
-    
-            if(numOfArtistsArr.length < 2){
+     function selectArtists(time, artistNum){
+            if(numOfArtistsArr.length < 1){
                 clearInterval(timing);
                 console.log("done!")
             }
 
-            const selectedArtists = getUniqueArtists(numOfLineToShow);
+            const selectedArtists = getUniqueArtists(artistNum);
 
             if (firstTime == 0){
-                const selectedArtists = getUniqueArtists(4);
+                const selectedArtists = getUniqueArtists(artistNum);
     
                 for (let i = 0; i < selectedArtists.length; i++){
                     numOfArtistsArr.splice(numOfArtistsArr.indexOf(selectedArtists[i]), 1);
@@ -227,14 +224,14 @@ function drawChart(dataset){
       
 
         const data = getNewData(groupedData, selectedDataset); 
-        console.log(data)
+        // console.log(selectedDataset)
         let newDataset = [];
         data.map(d => {
             d.values.map(e => {
                 newDataset.push(e)
             })
         });
-        console.log(newDataset)
+        // console.log(newDataset)
         const lineOneData = newDataset.filter(d => {
             return d.type == list[0] || 
                     d.type == list[1]
@@ -272,18 +269,12 @@ function drawChart(dataset){
             .attr("stroke-linejoin", "round")
             .attr("stroke-linecap", "round")
             .attr("stroke","#70c1b3")
-            .transition().duration(t)
+            .transition().duration(time)
             .attr("opacity", 1)
-        // .merge(linesOne)
-        //     .attr('class', 'one')
-            // .attr("fill", "none")
-            // .attr("stroke-width", strokewidth)
-            // .attr("stroke-linejoin", "round")
-            // .attr("stroke-linecap", "round")
-            // .attr("stroke","#70c1b3")
+
             
         linesOne.exit()
-        .transition().duration(1000)
+        .transition().duration(time / 2) 
         .attr("opacity", 0)
         .remove()
 
@@ -299,14 +290,12 @@ function drawChart(dataset){
             .attr("stroke-linejoin", "round")
             .attr("stroke-linecap", "round")
             .attr("stroke","#70c1b3")
-            .transition().duration(t)
+            .transition().duration(time)
             .attr("opacity", 1)
-        // .merge(linesTwo)
-        //     .attr('class', 'two')
 
 
         linesTwo.exit()
-        .transition().duration(1000)
+        .transition().duration(time / 2)
         .attr("opacity", 0)
         .remove()
 
@@ -323,14 +312,12 @@ function drawChart(dataset){
             .attr("stroke-linejoin", "round")
             .attr("stroke-linecap", "round")
             .attr("stroke","#70c1b3")
-            .transition().duration(t)
+            .transition().duration(time)
             .attr("opacity", 1)
-        // .merge(linesThree)
-        //     .attr('class', 'three')
 
 
         linesThree.exit()
-        .transition().duration(1000)
+        .transition().duration(time / 2)
         .attr("opacity", 0)
         .remove()
 
@@ -347,14 +334,12 @@ function drawChart(dataset){
             .attr("stroke-linejoin", "round")
             .attr("stroke-linecap", "round")
             .attr("stroke","#70c1b3")
-            .transition().duration(t)
+            .transition().duration(time)
             .attr("opacity", 1)
-        // .merge(linesFour)
-        //     .attr('class', 'four')
 
 
         linesFour.exit()
-            .transition().duration(1000)
+            .transition().duration(time / 2)
             .attr("opacity", 0)
             .remove()
 
@@ -369,101 +354,95 @@ function drawChart(dataset){
             .append("text")
              .attr("class", "curve-texts")
              .attr("id", d => `${formatName(d.artist)}-curve-text`)
-         
-         curveTextsEnter.append("textPath")
+          
+        let curvedTextsOrderList = [];
+
+        if (artistNum >= 4) {
+            for (let n = 0; n < newDataset.length / 20; n++){
+                curvedTextsOrderList.push(n * 20);
+            }
+        } else {
+                curvedTextsOrderList.push(0)
+        }
+
+         curvedTextsOrderList.forEach(el => {
+             
+            curveTextsEnter.append("textPath")
                             .attr("xlink:href", (d, i) => {
-                                const index = i % 4 + 1
-                                const firstGroup = i < newDataset.length / 4
-                                const secondGroup = (newDataset.length / 4 <= i) && (i < (newDataset.length / 4) * 2);
-                                const thirdGroup = ((newDataset.length / 4) * 2 <= i) && (i < (newDataset.length / 4) * 3);
-                                if (firstGroup) {
-                                   if (index == 1) {
-                                    return `#${formatName(d.artist)}-for-curves-${1}`
-                                   } else {
-                                       return;
-                                   }
-                                } else if (secondGroup){
-                                    if (index == 2) {
-                                    return `#${formatName(d.artist)}-for-curves-${2}`
-                                   } else {
-                                       return;
-                                   }
-                                } else if (thirdGroup){
-                                    if (index == 3) {
-                                    return `#${formatName(d.artist)}-for-curves-${3}`
-                                   } else {
-                                       return;
-                                   }
-                                } else {
-                                    if (index == 4){
-                                    return `#${formatName(d.artist)}-for-curves-${4}`
-                                    } else {
-                                        return;
-                                    }
+                                const index = i % 4 + 1   
+
+                                if (((el) <= i) && (i < (el + 5))){
+                                        if (index == 1) {
+                                            return `#${formatName(d.artist)}-for-curves-${1}`
+                                           } else {
+                                               return;
+                                           }
+                                } else if (((el + 5) <= i) && (i < (el + 10))){
+                                        if (index == 2) {
+                                            return `#${formatName(d.artist)}-for-curves-${2}`
+                                           } else {
+                                               return;
+                                           }
+                                } else if (((el + 10) <= i) && (i < (el + 15))){
+                                        if (index == 3) {
+                                            return `#${formatName(d.artist)}-for-curves-${3}`
+                                           } else {
+                                               return;
+                                           }
+                                } else if (((el + 15) <= i) && (i < (el + 20))){
+                                        if (index == 4){
+                                            return `#${formatName(d.artist)}-for-curves-${4}`
+                                            } else {
+                                                return;
+                                            }
                                 }
+  
                             })
                             .text(d => d.artist)
-                            .transition().duration(t)
+                            .transition().duration(time)
                             .attr("opacity", 1)
 
-            // curveTexts = curveTextsEnter.merge(curveTexts)
+                // curveTexts = curveTextsEnter.merge(curveTexts)
             
-            curveTexts.exit()
-            .transition().duration(1000)
-            .attr("opacity", 0)
-            .remove()
+                curveTexts.exit()
+                .transition().duration(time / 2)
+                .attr("opacity", 0)
+                .remove()
 
-        // d3.selectAll(".line")
-        //         .data(returnSourceTarget(data[0].values))
-        //         .enter().append("path")
-        //             .attr("class", "line")
-    
- 
-        // console.log(artists)
+         })
+    }
 
-        // d3.selectAll("path")
-        //       .on("mouseover", null)
-        //       .on("mouseout", null)
-
-        // d3.selectAll("path")
-        //       .transition()
-        //       .duration(t / 2)
-        //       .attr("opacity", 0)
-              
-
-        // d3.selectAll(".curve-texts")
-        //     .transition()
-        //     .duration(t / 2)
-        //     .attr("opacity", 0)
-
-            // artists.forEach((d, i) => {
-            //       d3.selectAll(`.${d}`)
-            //           .transition()
-            //           .duration(t) 
-            //           .transition()
-            //           .delay(t + i * t)
-            //           .attr("opacity", opac)
-            //           .on("end", () => {
-            //             // d3.select(`${formatName(d)}-curve-text`)  
-            //           })       
-            //         const index = i+1;
-                    // d3.select(`#${d}-curve-text`)  
-                    //     .append("textPath")
-                    //         .attr("xlink:href", d => `#${formatName(d.artist)}-for-curves-${index}`)
-                    //         .text(d => d.artist);
-
-            //         d3.select(`#${d}-curve-text`)                       
-            //             .transition()
-            //             .duration(t) 
-            //             .transition()
-            //             .delay(t + i * t)
-            //             .attr("opacity", opac)   
-                                 
-            //     })
-    
-        }
-        selectArtists();
-        const timing = setInterval(selectArtists, 5 * t);
+        let timeButtonText,
+            artistsButtonText,
+            t = 2000,
+            intervalTime = t * 3,
+            numOfSelectedArtists = 4;
+            
+        selectArtists(t, numOfSelectedArtists);
+        let timing = setInterval(selectArtists, intervalTime, t, numOfSelectedArtists);
+        
+        const timeButtons = d3.selectAll("button");
+        const numOfArtistsButtons = d3.selectAll(".num-of-artists");
+        
+        timeButtons.on("click", (d,i) => {
+            selectedDataset= [];
+            firstTime = 0;
+            const selButton = timeButtons.nodes()[i];
+            timeButtonText = selButton.innerHTML;
+            t = parseFloat(timeButtonText.replace("s", "")) * 1000;
+            intervalTime = t * 3;
+            selectArtists(t, numOfSelectedArtists);
+            timing = setInterval(selectArtists, intervalTime, t, numOfSelectedArtists);
+        })
+        numOfArtistsButtons.on("click", (d,i) => {
+            selectedDataset= [];
+            firstTime = 0;
+            const selButton = numOfArtistsButtons.nodes()[i];
+            artistsButtonText = selButton.innerHTML;
+            numOfSelectedArtists = parseInt(artistsButtonText);
+            selectArtists(t, numOfSelectedArtists);
+            timing = setInterval(selectArtists, intervalTime, t, numOfSelectedArtists);
+        })
 
    
  }
