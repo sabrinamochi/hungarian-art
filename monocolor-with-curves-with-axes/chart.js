@@ -274,7 +274,7 @@ function drawChart(dataset){
 
             
         linesOne.exit()
-        .transition().duration(time / 2) 
+        .transition().delay(time / 2).duration(time / 2)
         .attr("opacity", 0)
         .remove()
 
@@ -295,7 +295,7 @@ function drawChart(dataset){
 
 
         linesTwo.exit()
-        .transition().duration(time / 2)
+        .transition().delay(time / 2).duration(time / 2)
         .attr("opacity", 0)
         .remove()
 
@@ -317,7 +317,7 @@ function drawChart(dataset){
 
 
         linesThree.exit()
-        .transition().duration(time / 2)
+        .transition().delay(time / 2).duration(time / 2)
         .attr("opacity", 0)
         .remove()
 
@@ -339,7 +339,7 @@ function drawChart(dataset){
 
 
         linesFour.exit()
-            .transition().duration(time / 2)
+            .transition().delay(time / 2).duration(time / 2)
             .attr("opacity", 0)
             .remove()
 
@@ -405,7 +405,7 @@ function drawChart(dataset){
                 // curveTexts = curveTextsEnter.merge(curveTexts)
             
                 curveTexts.exit()
-                .transition().duration(time / 2)
+                .transition().delay(time / 2).duration(time) 
                 .attr("opacity", 0)
                 .remove()
 
@@ -419,12 +419,13 @@ function drawChart(dataset){
             numOfSelectedArtists = 4;
             
         selectArtists(t, numOfSelectedArtists);
-        let timing = setInterval(selectArtists, intervalTime, t, numOfSelectedArtists);
+        var timing = setInterval(selectArtists, intervalTime, t, numOfSelectedArtists);
         
-        const timeButtons = d3.selectAll("button");
+        const timeButtons = d3.selectAll(".time");
         const numOfArtistsButtons = d3.selectAll(".num-of-artists");
         
         timeButtons.on("click", (d,i) => {
+            clearInterval(timing);
             selectedDataset= [];
             firstTime = 0;
             const selButton = timeButtons.nodes()[i];
@@ -435,6 +436,7 @@ function drawChart(dataset){
             timing = setInterval(selectArtists, intervalTime, t, numOfSelectedArtists);
         })
         numOfArtistsButtons.on("click", (d,i) => {
+            clearInterval(timing);
             selectedDataset= [];
             firstTime = 0;
             const selButton = numOfArtistsButtons.nodes()[i];
