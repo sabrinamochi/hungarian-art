@@ -414,8 +414,8 @@ function drawChart(dataset){
 
         let timeButtonText,
             artistsButtonText,
-            t = 2000,
-            intervalTime = t * 3,
+            t = 1500,
+            intervalTime = 2000,
             numOfSelectedArtists = 4;
             
         selectArtists(t, numOfSelectedArtists);
@@ -430,8 +430,7 @@ function drawChart(dataset){
             firstTime = 0;
             const selButton = timeButtons.nodes()[i];
             timeButtonText = selButton.innerHTML;
-            t = parseFloat(timeButtonText.replace("s", "")) * 1000;
-            intervalTime = t * 3;
+            intervalTime = parseFloat(timeButtonText.replace("s", "")) * 1000;
             selectArtists(t, numOfSelectedArtists);
             timing = setInterval(selectArtists, intervalTime, t, numOfSelectedArtists);
         })
