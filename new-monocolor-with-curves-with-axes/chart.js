@@ -90,20 +90,25 @@ function selectArtists(data){
             }
         } else {
                 const lineToShow = timeCount % 4;
-                if (lineToShow == 1) {
-                    const indexFirst = Math.floor(Math.random()*first.length)
-                    rem.push(first[indexFirst])
-                } else if (lineToShow == 2){
-                    const indexSecond = Math.floor(Math.random()*second.length)
-                    rem.push(second[indexSecond])
-                } else if (lineToShow == 3){
-                    const indexThird = Math.floor(Math.random()*third.length)
-                    rem.push(third[indexThird])
-                } else {
-                    const indexFourth = Math.floor(Math.random()*fourth.length)
-                    rem.push(fourth[indexFourth])
-                    
-                }      
+                switch(lineToShow){
+                    case 1:
+                        const indexFirst = Math.floor(Math.random()*first.length)
+                        rem.push(first[indexFirst])
+                        break
+                    case 2:
+                        const indexSecond = Math.floor(Math.random()*second.length)
+                        rem.push(second[indexSecond])
+                        break
+                    case 3:
+                        const indexThird = Math.floor(Math.random()*third.length)
+                        rem.push(third[indexThird])
+                        break
+                    default:
+                        const indexFourth = Math.floor(Math.random()*fourth.length)
+                        rem.push(fourth[indexFourth])
+                        break
+
+                }     
             }
             return rem;
         }
@@ -111,58 +116,67 @@ function selectArtists(data){
         let selectedArtists;
         
         function selectArtists(time, artistNum){   
-            if(numOfArtistsArr.length < 1){
-                clearInterval(timing);
-                console.log("done!")
-            } else {
+            if(numOfArtistsArr.length > 1){
                 if (timeCount == 0){
                     selectedArtists = getUniqueArtists(artistNum);
                     for (let i = 0, len = selectedArtists.length; i < len; i++){
                         numOfArtistsArr.splice(numOfArtistsArr.indexOf(selectedArtists[i].key), 1);
-                        if(selectedArtists[i].row_number == 0){
-                            first.splice(first.indexOf(selectedArtists[i]), 1)
-                        }else if (selectedArtists[i].row_number == 1){
-                            second.splice(second.indexOf(selectedArtists[i]), 1)
-                        }else if (selectedArtists[i].row_number == 2){
-                            third.splice(third.indexOf(selectedArtists[i]), 1)
-                        }else {
-                            fourth.splice(fourth.indexOf(selectedArtists[i]), 1)
+                        switch(selectedArtists[i].row_number){
+                            case 0:
+                                first.splice(first.indexOf(selectedArtists[i]), 1)
+                                break
+                            case 1:
+                                second.splice(second.indexOf(selectedArtists[i]), 1)
+                                break
+                            case 2:
+                                third.splice(third.indexOf(selectedArtists[i]), 1)
+                                break
+                            default:
+                                fourth.splice(fourth.indexOf(selectedArtists[i]), 1)
+                                break
                         }
                     }
                 
                 } else {
-                    newArtists = getUniqueArtists(1);
+                    newArtists = getUniqueArtists(1)[0];
                     selectedArtists.shift();
-                    selectedArtists.push(newArtists[0])
+                    selectedArtists.push(newArtists)
                 
-                    numOfArtistsArr.splice(numOfArtistsArr.indexOf(newArtists[0].key), 1);
+                    numOfArtistsArr.splice(numOfArtistsArr.indexOf(newArtists.key), 1);
 
-                    if(newArtists[0].row_number == 0){
-                        first.splice(first.indexOf(newArtists[0]), 1)
-                    }else if (newArtists[0].row_number == 1){
-                        second.splice(second.indexOf(newArtists[0]), 1)
-                    }else if (newArtists[0].row_number == 2){
-                        third.splice(third.indexOf(newArtists[0]), 1)
-                    }else {
-                        fourth.splice(fourth.indexOf(newArtists[0]), 1)
+                    switch(newArtists.row_number){
+                        case 0:
+                            first.splice(first.indexOf(newArtists), 1)
+                            break
+                        case 1:
+                            second.splice(second.indexOf(newArtists), 1)
+                            break
+                        case 2:
+                            third.splice(third.indexOf(newArtists), 1)
+                            break
+                        default:
+                            fourth.splice(fourth.indexOf(newArtists), 1)
+                            break
                     }
                 }
-
+            } else {
+                clearInterval(timing);
+                console.log("done!")
             }
 
     timeCount += 1;
 
-    const newFlatData = [];
-    // console.log(selectedArtists)
-    selectedArtists.map(d => {
-        d.values.map(e => {
-            e.row_number = d.row_number;
-            newFlatData.push(e)
-        })
-    });
-
-    // console.log(newFlatData)
+    const newFlatData = selectedArtists.reduce(
+        (arr, elem) => {
+            for (const c of elem.values) {
+              c.row_number = elem.row_number
+              arr.push(c);
+            }
+            return arr;
+          }, []
+      );
     
+    // console.log(newFlatData)
     function drawChart(dataInput){
         const lineOneData = dataInput.filter(d => {
             return d.type == list[0] || 
@@ -180,37 +194,40 @@ function selectArtists(data){
         })
     
         const lineFourData = dataInput.filter(d => {
-            return d.type == list[3]|| 
+            return d.type == list[3] || 
                     d.type == list[4]
         })
 
         function returnSourceTarget(data){
             const newData = [];
-            for (let i = 0, len = data.length; i < len; i++) {
-                for (let j = i + 1, len = data.length; j < len; j++) {
-                    if (data[i].artist === data[j].artist) {
-                        newData.push({
-                            source: {name: data[i].artist, number: data[i].number, type: data[i].type,  row_number: data[i].row_number},
-                            target: {name: data[j].artist, number: data[j].number, type: data[j].type, row_number: data[j].row_number}
-                        });
-                    }
-                }
+            const nested = d3.nest()
+                .key(d => d.artist)
+                .entries(data)
+
+            for (let i = 0; i < nested.length; i++){
+                const obj = nested[i].values;
+                newData.push({
+                    source: {name: obj[0].artist, number: obj[0].number, type: obj[0].type, row_number: obj[0].row_number},
+                    target: {name: obj[1].artist, number: obj[1].number, type: obj[1].type, row_number: obj[1].row_number}
+                });
             }
             return newData;
         }
     
         function returnSourceTarget2(data){
             const newData = [];
-            for (var i = 0; i < data.length; i++) {
-                for (var j = i + 1; j < data.length; j++) {
-                    if (data[i].artist === data[j].artist) {
-                        newData.push({
-                            source: {name: data[j].artist, number: data[j].number, type: data[j].type, row_number: data[i].row_number},
-                            target: {name: data[i].artist, number: data[i].number, type: data[i].type, row_number: data[j].row_number}
-                        });
-                    }
-                }
+            const nested = d3.nest()
+                .key(d => d.artist)
+                .entries(data)
+
+            for (let i = 0; i < nested.length; i++){
+                const obj = nested[i].values;
+                newData.push({
+                    source: {name: obj[1].artist, number: obj[1].number, type: obj[1].type, row_number: obj[1].row_number},
+                    target: {name: obj[0].artist, number: obj[0].number, type: obj[0].type, row_number: obj[0].row_number}
+                });
             }
+
             return newData;
         }
 
@@ -337,6 +354,7 @@ function selectArtists(data){
                         })
                         .text(d => d.artist)
                         .attr("font-size", 8)
+                        .attr("opacity", 0)
                         .transition().duration(time)
                         .attr("opacity", 1)
         
@@ -357,14 +375,18 @@ function selectArtists(data){
                 d3.selectAll("text")
                     .attr("opacity", opac / 6);
 
-                const completeFlatData = [];
-                data.map(d => {
-                    // console.log(d)
-                    d.values.map(e => {
-                        e.row_number = d.row_number;
-                        completeFlatData.push(e)
-                    })
-                });
+                const completeFlatData = data.reduce(
+                    (arr, elem) => {
+                        for (const c of elem.values) {
+                          c.row_number = elem.row_number
+                          arr.push(c);
+                        }
+                        return arr;
+                      }, []
+                  );
+
+                //   console.log(completeFlatData)
+                
                 drawChart(completeFlatData)
 
                 const sel = d.artist;
@@ -411,7 +433,7 @@ function selectArtists(data){
   let timeButtonText,
       artistsButtonText,
       t = 1000,
-      intervalTime = 3000,
+      intervalTime = 5000,
       numOfSelectedArtists = 40;
             
         selectArtists(t, numOfSelectedArtists);
@@ -528,14 +550,19 @@ function drawBackBone(dataset){
             .entries(dataset);
 
         groupedData.forEach((row, index) => {
-            if (index % 4 == 0) {
-                row.row_number = 0;
-            } else if (index % 4 == 1){
-                row.row_number = 1;
-            } else if (index % 4 == 2){
-                row.row_number = 2;
-            } else if (index % 4 == 3){
-                row.row_number = 3;
+            switch(index % 4) {
+                case 0:
+                    row.row_number = 0;
+                    break
+                case 1:
+                    row.row_number = 1;
+                    break
+                case 2: 
+                    row.row_number = 2;
+                    break
+                default:
+                    row.row_number = 3;
+                    break
             }
         })
 
