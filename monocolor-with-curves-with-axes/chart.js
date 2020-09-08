@@ -94,7 +94,7 @@ function drawChart(dataset){
         .x(d => xScaleFour(d.type))
         .y(d => yScale(+d.number))
 
-    const groupedData = d3.nest()
+    const groupedDataOrigin = d3.nest()
         .key(d => d.artist)
         .entries(dataset);
 
@@ -104,8 +104,8 @@ function drawChart(dataset){
             for (var j = i + 1; j < data.length; j++) {
                 if (data[i].artist === data[j].artist) {
                     newData.push({
-                        source: {name: data[i].artist, number: data[i].number, type: data[i].type},
-                        target: {name: data[j].artist, number: data[j].number, type: data[j].type}
+                        source: {name: data[i].artist, number: data[i].number, type: data[i].type,  row_number: data[i].row_number},
+                        target: {name: data[j].artist, number: data[j].number, type: data[j].type, row_number: data[j].row_number}
                     });
                 }
             }
@@ -119,8 +119,8 @@ function drawChart(dataset){
             for (var j = i + 1; j < data.length; j++) {
                 if (data[i].artist === data[j].artist) {
                     newData.push({
-                        source: {name: data[j].artist, number: data[j].number, type: data[j].type},
-                        target: {name: data[i].artist, number: data[i].number, type: data[i].type}
+                        source: {name: data[j].artist, number: data[j].number, type: data[j].type, row_number: data[i].row_number},
+                        target: {name: data[i].artist, number: data[i].number, type: data[i].type, row_number: data[j].row_number}
                     });
                 }
             }
@@ -165,12 +165,14 @@ function drawChart(dataset){
          //    .attr("fill", d => color(d.artist)); 
 
      
-     const curveTextsGroup = chart.append("g");                
+     const curveTextsGroup = chart.append("g");     
+     
+d3.json("../data/grouped-with-curve-number.json").then(groupedData => {
 
       let numOfArtists =  groupedData.length;
       const numOfArtistsArr = [...Array(numOfArtists).keys()]
       
-      function getUniqueArtists(number){
+      function getUniqueArtists(number, data){
             const tmp = numOfArtistsArr.slice(numOfArtistsArr)  
             const rem = [];
     
@@ -201,10 +203,10 @@ function drawChart(dataset){
                 console.log("done!")
             }
 
-            const selectedArtists = getUniqueArtists(artistNum);
+            const selectedArtists = getUniqueArtists(artistNum, groupedData);
 
             if (firstTime == 0){
-                const selectedArtists = getUniqueArtists(artistNum);
+                const selectedArtists = getUniqueArtists(artistNum, groupedData);
     
                 for (let i = 0; i < selectedArtists.length; i++){
                     numOfArtistsArr.splice(numOfArtistsArr.indexOf(selectedArtists[i]), 1);
@@ -212,7 +214,7 @@ function drawChart(dataset){
                 }
                 
             } else {
-                const selectedArtists = getUniqueArtists(1);
+                const selectedArtists = getUniqueArtists(1, groupedData);
                 selectedDataset.shift()
                 for (let i = 0; i < selectedArtists.length; i++){
                     numOfArtistsArr.splice(numOfArtistsArr.indexOf(selectedArtists[i]), 1);
@@ -221,17 +223,18 @@ function drawChart(dataset){
             }
     
             firstTime += 1;
-      
+     
 
         const data = getNewData(groupedData, selectedDataset); 
-        // console.log(selectedDataset)
+        console.log(data)
         let newDataset = [];
         data.map(d => {
             d.values.map(e => {
+                e.row_number = d.row_number;
                 newDataset.push(e)
             })
         });
-        // console.log(newDataset)
+
         const lineOneData = newDataset.filter(d => {
             return d.type == list[0] || 
                     d.type == list[1]
@@ -278,7 +281,7 @@ function drawChart(dataset){
         .attr("opacity", 0)
         .remove()
 
-        const linesTwo = linesOneGroup.selectAll(".two")
+        const linesTwo = linesTwoGroup.selectAll(".two")
             .data(lineTwoLinks, (d, i) => d.source.name);
             
         linesTwo.enter().append("path")
@@ -369,36 +372,40 @@ function drawChart(dataset){
              
             curveTextsEnter.append("textPath")
                             .attr("xlink:href", (d, i) => {
-                                const index = i % 4 + 1   
+                                const lineNum = +d.row_number + 1;
+                                return `#${formatName(d.artist)}-for-curves-${lineNum}`
 
-                                if (((el) <= i) && (i < (el + 5))){
-                                        if (index == 1) {
-                                            return `#${formatName(d.artist)}-for-curves-${1}`
-                                           } else {
-                                               return;
-                                           }
-                                } else if (((el + 5) <= i) && (i < (el + 10))){
-                                        if (index == 2) {
-                                            return `#${formatName(d.artist)}-for-curves-${2}`
-                                           } else {
-                                               return;
-                                           }
-                                } else if (((el + 10) <= i) && (i < (el + 15))){
-                                        if (index == 3) {
-                                            return `#${formatName(d.artist)}-for-curves-${3}`
-                                           } else {
-                                               return;
-                                           }
-                                } else if (((el + 15) <= i) && (i < (el + 20))){
-                                        if (index == 4){
-                                            return `#${formatName(d.artist)}-for-curves-${4}`
-                                            } else {
-                                                return;
-                                            }
-                                }
+                                // const index = i % 4 + 1   
+
+                                // if (((el) <= i) && (i < (el + 5))){
+                                //         if (index == 1) {
+                                //             return `#${formatName(d.artist)}-for-curves-${1}`
+                                //            } else {
+                                //                return;
+                                //            }
+                                // } else if (((el + 5) <= i) && (i < (el + 10))){
+                                //         if (index == 2) {
+                                //             return `#${formatName(d.artist)}-for-curves-${2}`
+                                //            } else {
+                                //                return;
+                                //            }
+                                // } else if (((el + 10) <= i) && (i < (el + 15))){
+                                //         if (index == 3) {
+                                //             return `#${formatName(d.artist)}-for-curves-${3}`
+                                //            } else {
+                                //                return;
+                                //            }
+                                // } else if (((el + 15) <= i) && (i < (el + 20))){
+                                //         if (index == 4){
+                                //             return `#${formatName(d.artist)}-for-curves-${4}`
+                                //             } else {
+                                //                 return;
+                                //             }
+                                // }
   
                             })
                             .text(d => d.artist)
+                            .attr("font-size", 10)
                             .transition().duration(time)
                             .attr("opacity", 1)
 
@@ -410,13 +417,14 @@ function drawChart(dataset){
                 .remove()
 
          })
-    }
+      }
+    
 
         let timeButtonText,
             artistsButtonText,
-            t = 1500,
-            intervalTime = 2000,
-            numOfSelectedArtists = 4;
+            t = 2000,
+            intervalTime = 10000,
+            numOfSelectedArtists = 30;
             
         selectArtists(t, numOfSelectedArtists);
         var timing = setInterval(selectArtists, intervalTime, t, numOfSelectedArtists);
@@ -444,6 +452,8 @@ function drawChart(dataset){
             selectArtists(t, numOfSelectedArtists);
             timing = setInterval(selectArtists, intervalTime, t, numOfSelectedArtists);
         })
+
+    })
 
    
  }

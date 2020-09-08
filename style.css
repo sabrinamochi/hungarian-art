@@ -72,6 +72,7 @@ svg text {
 .button-container {
     display: flex;
     justify-content: center;
+    align-items: center;
 }
 
 .button-container p {
@@ -80,11 +81,12 @@ svg text {
 
 button {
     cursor: pointer;
-    width: 5rem;
-    height: 2rem;
+    width: 3rem;
+    height: 2em;
     padding: 0;
     background: white;
-    border-radius: 10%;
-    margin-right: 1rem;
+    border-radius: 50%;
+    border: 1px solid gray;
+    margin-right: 1em;
 
 }
