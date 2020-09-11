@@ -15,15 +15,17 @@ const innermargin = 10;
 const textwidth = 20;
 const strokewidth = 0.6;
 const selectedStrokeWidth = 3;
-const opac = 1;
+const opac = 0.6;
+const numOfColumns = 5;
 
-const x1 = "exhibitions_solo_rank";
-const x2 = "exhibitions_total_rank";
-const x3 = "prestige_rank";
-const x4 = "prestige_avg_rank";
-const x5 = "prestige_Top10%_rank";
+const x1 = "CRank"
+const x2 = "prestige_rank";
+const x3 = "prestige_avg_rank";
+const x4 = "prestige_Top10%_rank";
+const x5 = "exhibitions_total_rank";
+const x6 = "exhibitions_solo_rank";
 
-const list = [x1, x2, x3, x4, x5];
+const rankingList = [x1, x2, x3, x4, x5, x6];
 
 svg.attr("width", width)
     .attr("height", height);
@@ -31,11 +33,11 @@ svg.attr("width", width)
 const chart = svg.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-
 let lineGeneratorOne,
     lineGeneratorTwo,
     lineGeneratorThree,
     lineGeneratorFour,
+    lineGeneratorFive,
     fontSizeScale;
 
 ////////////////////////////////////////
@@ -45,6 +47,7 @@ const linesOneGroup = chart.append("g");
 const linesTwoGroup = chart.append("g");
 const linesThreeGroup = chart.append("g");
 const linesFourGroup = chart.append("g");
+const linesFiveGroup = chart.append("g");
 
 const curveTextsGroup = chart.append("g");
 
@@ -64,44 +67,25 @@ const formatName = (data) => {
 }
 
 function selectArtistsThenDraw(data) {
-    let first = data.filter(d => d.row_number == 0);
-    let second = data.filter(d => d.row_number == 1);
-    let third = data.filter(d => d.row_number == 2);
-    let fourth = data.filter(d => d.row_number == 3);
+    let first = data.filter(d => d.row_number == 1);
+    let second = data.filter(d => d.row_number == 2);
+    let third = data.filter(d => d.row_number == 3);
+    let fourth = data.filter(d => d.row_number == 4);
+    let five = data.filter(d => d.row_number == 5);
 
     let numOfArtists = data.length;
     let numOfArtistsArr = [...Array(numOfArtists).keys()]
 
-    let timeCount = 0;
-    const conditions = [+1, -1, +2, -2, +3, -3, +4, -4, +5, -5];
-
-    let fArray = [],
-        sArray = [],
-        thArray = [],
-        foArray = [];
-    let indexFirst, f, indexSecond, s, indexThird, th, indexFourth, fo;
+    let timeCount = 0; 
+    let indexFirst, indexSecond, indexThird, indexFourth, indexFive;
 
     function getUniqueArtists(number) {
 
         const rem = [];
 
         if (number > 1) {
-            for (let i = 0, len = (number / 4); i < len; i++) {
+            for (let i = 0, len = (number / numOfColumns); i < len; i++) {
                 indexFirst = Math.floor(Math.random() * first.length)
-                f = +first[indexFirst].values[0].number
-                // while (fArray.includes(f)) {
-                //     indexFirst = Math.floor(Math.random() * first.length)
-                //     f = +first[indexFirst].values[0].number
-                // }
-                fArray.push(f);
-                if (i > 0) {
-                    while (conditions.some(el => fArray.includes(f + el))) {
-                        fArray.pop()
-                        indexFirst = Math.floor(Math.random() * first.length)
-                        f = +first[indexFirst].values[0].number
-                        fArray.push(f);
-                    }
-                }
                 rem.push(first[indexFirst])
                 const nameOne = first[indexFirst].key;
                 first = first.filter(d => {
@@ -109,21 +93,6 @@ function selectArtistsThenDraw(data) {
                 })
 
                 indexSecond = Math.floor(Math.random() * second.length)
-                s = +second[indexSecond].values[1].number
-
-                // while (sArray.includes(s)) {
-                //     indexSecond = Math.floor(Math.random() * second.length)
-                //     s = +second[indexSecond].values[1].number
-                // }
-                sArray.push(s);
-                if (i > 0) {
-                    while (conditions.some(el => sArray.includes(s + el))) {
-                        sArray.pop()
-                        indexSecond = Math.floor(Math.random() * second.length)
-                        s = +second[indexSecond].values[1].number
-                        sArray.push(s);
-                    }
-                }
                 rem.push(second[indexSecond])
                 const nameTwo = second[indexSecond].key;
                 second = second.filter(d => {
@@ -131,20 +100,6 @@ function selectArtistsThenDraw(data) {
                 })
 
                 indexThird = Math.floor(Math.random() * third.length)
-                th = +third[indexThird].values[2].number
-                // while (thArray.includes(th)) {
-                //     indexThird = Math.floor(Math.random() * third.length)
-                //     th = +third[indexThird].values[2].number
-                // }
-                thArray.push(th);
-                if (i > 0) {
-                    while (conditions.some(el => thArray.includes(th + el))) {
-                        thArray.pop()
-                        indexThird = Math.floor(Math.random() * third.length)
-                        th = +third[indexThird].values[2].number
-                        thArray.push(th);
-                    }
-                }
                 rem.push(third[indexThird])
                 const nameThree = third[indexThird].key;
                 third = third.filter(d => {
@@ -152,45 +107,25 @@ function selectArtistsThenDraw(data) {
                 })
 
                 indexFourth = Math.floor(Math.random() * fourth.length)
-                fo = +fourth[indexFourth].values[4].number
-                // while (foArray.includes(fo)) {
-                //     indexFourth = Math.floor(Math.random() * fourth.length)
-                //     fo = +fourth[indexFourth].values[4].number
-                // }
-                foArray.push(fo);
-                if (i > 0) {
-                    while (conditions.some(el => foArray.includes(fo + el))) {
-                        foArray.pop()
-                        indexFourth = Math.floor(Math.random() * fourth.length)
-                        fo = +fourth[indexFourth].values[4].number
-                        foArray.push(fo);
-                    }
-                }
                 rem.push(fourth[indexFourth])
                 const nameFour = fourth[indexFourth].key;
                 fourth = fourth.filter(d => {
                     return d.key !== nameFour;
                 })
 
+                indexFive = Math.floor(Math.random() * five.length)
+                rem.push(five[indexFive])
+                const nameFive = five[indexFive].key;
+                five = five.filter(d => {
+                    return d.key !== nameFive;
+                })
+
             }
         } else {
-            const lineToShow = timeCount % 4;
+            const lineToShow = timeCount % numOfColumns;
 
             if (lineToShow == 1) {
                 indexFirst = Math.floor(Math.random() * first.length);
-                f = +first[indexFirst].values[0].number
-                // while (fArray.includes(f)) {
-                //     indexFirst = Math.floor(Math.random() * first.length);
-                //     f = +first[indexFirst].values[0].number
-                // }
-                fArray.shift();
-                fArray.push(f);
-                while (conditions.some(el => fArray.includes(f + el))) {
-                    fArray.pop()
-                    indexFirst = Math.floor(Math.random() * first.length)
-                    f = +first[indexFirst].values[0].number
-                    fArray.push(f);
-                }
                 rem.push(first[indexFirst])
                 const name = first[indexFirst].key;
                 first = first.filter(d => {
@@ -200,19 +135,6 @@ function selectArtistsThenDraw(data) {
 
             } else if (lineToShow == 2) {
                 indexSecond = Math.floor(Math.random() * second.length)
-                s = +second[indexSecond].values[1].number
-                // while (sArray.includes(s)) {
-                //     indexSecond = Math.floor(Math.random() * second.length)
-                //     s = +second[indexSecond].values[1].number
-                // }
-                sArray.shift();
-                sArray.push(s);
-                while (conditions.some(el => sArray.includes(s + el))) {
-                    sArray.pop()
-                    indexSecond = Math.floor(Math.random() * second.length)
-                    s = +second[indexSecond].values[1].number
-                    sArray.push(s);
-                }
                 rem.push(second[indexSecond])
                 const name = second[indexSecond].key;
                 second = second.filter(d => {
@@ -221,42 +143,13 @@ function selectArtistsThenDraw(data) {
 
             } else if (lineToShow == 3) {
                 indexThird = Math.floor(Math.random() * third.length)
-                th = +third[indexThird].values[2].number
-                // while (thArray.includes(th)) {
-                //     indexThird = Math.floor(Math.random() * third.length)
-                //     th = +third[indexThird].values[2].number
-                // }
-
-                thArray.shift()
-                thArray.push(th);
-                while (conditions.some(el => thArray.includes(th + el))) {
-                    thArray.pop()
-                    indexThird = Math.floor(Math.random() * third.length)
-                    th = +third[indexThird].values[2].number
-                    thArray.push(th);
-                }
                 rem.push(third[indexThird])
                 const name = third[indexThird].key;
                 third = third.filter(d => {
                     return d.key !== name;
                 })
-            } else {
+            } else if (lineToShow == 4){
                 indexFourth = Math.floor(Math.random() * fourth.length)
-                fo = +fourth[indexFourth].values[4].number
-                // while (foArray.includes(fo)) {
-                //     indexFourth = Math.floor(Math.random() * fourth.length)
-                //     fo = +fourth[indexFourth].values[4].number
-                // }
-                foArray.shift()
-                foArray.push(fo);
-                while (conditions.some(el => foArray.includes(fo + el))) {
-                    foArray.pop()
-                    indexFourth = Math.floor(Math.random() * fourth.length)
-                    fo = +fourth[indexFourth].values[4].number
-                    foArray.push(fo);
-                    
-
-                }
                 rem.push(fourth[indexFourth])
                 const name = fourth[indexFourth].key;
                 fourth = fourth.filter(d => {
@@ -264,6 +157,13 @@ function selectArtistsThenDraw(data) {
                 })
 
 
+            } else {
+                indexFive = Math.floor(Math.random() * five.length)
+                rem.push(five[indexFive])
+                const name = five[indexFive].key;
+                five = five.filter(d => {
+                    return d.key !== name;
+                })
             }
         }
 
@@ -289,7 +189,18 @@ function selectArtistsThenDraw(data) {
             }
         } else {
             clearInterval(timing);
-            console.log("done!")
+            console.log("done!");
+            numOfArtists = data.length;
+            numOfArtistsArr = [...Array(numOfArtists).keys()]
+            first = data.filter(d => d.row_number == 1);
+            second = data.filter(d => d.row_number == 2);
+            third = data.filter(d => d.row_number == 3);
+            fourth = data.filter(d => d.row_number == 4);
+            five = data.filter(d => d.row_number == 5);
+            selectedDataset = [];
+            timeCount = 0;
+            selectArtists(t, numOfSelectedArtists);
+            timing = setInterval(selectArtists, intervalTime, t, numOfSelectedArtists);
         }
 
         timeCount += 1;
@@ -297,7 +208,11 @@ function selectArtistsThenDraw(data) {
         const newFlatData = selectedArtists.reduce(
             (arr, elem) => {
                 for (const c of elem.values) {
+                    const startOffsetValue = Math.random() < 0.5 ? "2%" : "98%";
+                    const anchorValue = startOffsetValue == "2%" ? "start" : "end";
                     c.row_number = elem.row_number
+                    c.start_offset = startOffsetValue;
+                    c.anchor = anchorValue;
                     arr.push(c);
                 }
                 return arr;
@@ -306,82 +221,84 @@ function selectArtistsThenDraw(data) {
 
         function drawChart(dataInput) {
             const lineOneData = dataInput.filter(d => {
-                return d.type == list[0] ||
-                    d.type == list[1]
+                return d.type == rankingList[0] ||
+                    d.type == rankingList[1]
             })
 
             const lineTwoData = dataInput.filter(d => {
-                return d.type == list[1] ||
-                    d.type == list[2]
+                return d.type == rankingList[1] ||
+                    d.type == rankingList[2]
             })
 
             const lineThreeData = dataInput.filter(d => {
-                return d.type == list[2] ||
-                    d.type == list[3]
+                return d.type == rankingList[2] ||
+                    d.type == rankingList[3]
             })
 
             const lineFourData = dataInput.filter(d => {
-                return d.type == list[3] ||
-                    d.type == list[4]
+                return d.type == rankingList[3] ||
+                    d.type == rankingList[4]
+            })
+
+            const lineFiveData = dataInput.filter(d => {
+                return d.type == rankingList[4] ||
+                    d.type == rankingList[5]
             })
 
             function returnSourceTarget(data) {
                 const newData = [];
                 const nested = d3.nest()
-                    .key(d => d.artist)
+                    .key(d => d.Artist)
                     .entries(data)
 
                 for (let i = 0; i < nested.length; i++) {
                     const obj = nested[i].values;
                     newData.push({
                         source: {
-                            name: obj[0].artist,
+                            name: obj[0].Artist,
                             number: obj[0].number,
                             type: obj[0].type,
-                            row_number: obj[0].row_number
                         },
                         target: {
-                            name: obj[1].artist,
+                            name: obj[1].Artist,
                             number: obj[1].number,
                             type: obj[1].type,
-                            row_number: obj[1].row_number
                         }
                     });
                 }
                 return newData;
             }
 
-            function returnSourceTarget2(data) {
-                const newData = [];
-                const nested = d3.nest()
-                    .key(d => d.artist)
-                    .entries(data)
+            // function returnSourceTarget2(data) {
+            //     const newData = [];
+            //     const nested = d3.nest()
+            //         .key(d => d.Artist)
+            //         .entries(data)
 
-                for (let i = 0; i < nested.length; i++) {
-                    const obj = nested[i].values;
-                    newData.push({
-                        source: {
-                            name: obj[1].artist,
-                            number: obj[1].number,
-                            type: obj[1].type,
-                            row_number: obj[1].row_number
-                        },
-                        target: {
-                            name: obj[0].artist,
-                            number: obj[0].number,
-                            type: obj[0].type,
-                            row_number: obj[0].row_number
-                        }
-                    });
-                }
+            //     for (let i = 0; i < nested.length; i++) {
+            //         const obj = nested[i].values;
+            //         newData.push({
+            //             source: {
+            //                 name: obj[1].Artist,
+            //                 number: obj[1].number,
+            //                 type: obj[1].type
+            //             },
+            //             target: {
+            //                 name: obj[0].Artist,
+            //                 number: obj[0].number,
+            //                 type: obj[0].type
+            //             }
+            //         });
+            //     }
 
-                return newData;
-            }
+            //     return newData;
+            // }
 
             const lineOneLinks = returnSourceTarget(lineOneData);
             const lineTwoLinks = returnSourceTarget(lineTwoData);
             const lineThreeLinks = returnSourceTarget(lineThreeData);
-            const lineFourLinks = returnSourceTarget2(lineFourData);
+            const lineFourLinks = returnSourceTarget(lineFourData);
+            const lineFiveLinks = returnSourceTarget(lineFiveData);
 
             const linesOne = linesOneGroup.selectAll(".one")
                 .data(lineOneLinks, (d, i) => d.source.name);
@@ -468,12 +385,35 @@ function selectArtistsThenDraw(data) {
                 // .transition().duration(time / 2)
                 // .attr("opacity", 0)
                 .remove()
+
+            const linesFive = linesFiveGroup.selectAll(".five")
+                .data(lineFiveLinks, (d, i) => d.source.name);
+
+            linesFive.enter().append("path")
+                .attr('id', d => `${formatName(d.source.name)}-for-curves-5`)
+                .attr('d', lineGeneratorFive)
+                .attr('class', 'five')
+                .attr("fill", "none")
+                .attr("stroke-width", strokewidth)
+                .attr("stroke-linejoin", "round")
+                .attr("stroke-linecap", "round")
+                .attr("stroke", "#70c1b3")
+                // .transition().duration(time)
+                .attr("opacity", opac)
+
+
+            linesFive.exit()
+                // .transition().duration(time / 2)
+                // .attr("opacity", 0)
+                .remove()
         }
 
         drawChart(newFlatData);
 
+        const filtered = newFlatData.filter((d, i) => i % (rankingList.length) == 0)
+
         let curveTexts = curveTextsGroup.selectAll("text")
-            .data(newFlatData.filter((d, i) => i % 5 == 0), (q) => q.artist)
+            .data(filtered, (q) => q.Artist)
 
         curveTextsEnter = curveTexts.enter()
             .append("text")
@@ -481,16 +421,15 @@ function selectArtistsThenDraw(data) {
 
         curveTextsEnter.append("textPath")
                 .attr("xlink:href", (d, i) => {
-                    const lineNum = +d.row_number + 1;
-                    return `#${formatName(d.artist)}-for-curves-${lineNum}`
-                })
-                .attr("startOffset", "2%")
-                .style("text-anchor", "start")
+                        return `#${formatName(d.Artist)}-for-curves-${d.row_number}`    
+                    })
+                .attr("startOffset", d => d.start_offset)
+                .style("text-anchor", d => d.anchor)
                 .text((d, i) => {
-                    return d.artist
+                    return d.Artist
                 })
                 .attr("font-size", 8)
-                // .attr("opacity", 0)
+                .attr("opacity", 0)
                 // .transition().duration(time)
                 .attr("opacity", 1)
 
@@ -514,7 +453,7 @@ function selectArtistsThenDraw(data) {
                 const completeFlatData = data.reduce(
                     (arr, elem) => {
                         for (const c of elem.values) {
-                            c.row_number = elem.row_number
+                            // c.row_number = elem.row_number
                             arr.push(c);
                         }
                         return arr;
@@ -525,7 +464,7 @@ function selectArtistsThenDraw(data) {
 
                 drawChart(completeFlatData)
 
-                const sel = d.artist;
+                const sel = d.Artist;
                 d3.selectAll("path")
                     .attr("opacity", e => {
                         if (e.source.name == sel) {
@@ -542,7 +481,7 @@ function selectArtistsThenDraw(data) {
                         }
                     })
 
-                d3.select(`#${formatName(d.artist)}-text`)
+                d3.select(`#${formatName(d.Artist)}-text`)
                     .attr("font-size", 15)
                     .attr("opacity", opac);
 
@@ -561,10 +500,11 @@ function selectArtistsThenDraw(data) {
                 timeCount = 0;
                 numOfArtists = data.length;
                 numOfArtistsArr = [...Array(numOfArtists).keys()]
-                first = data.filter(d => d.row_number == 0);
-                second = data.filter(d => d.row_number == 1);
-                third = data.filter(d => d.row_number == 2);
-                fourth = data.filter(d => d.row_number == 3);
+                first = data.filter(d => d.row_number == 1);
+                second = data.filter(d => d.row_number == 2);
+                third = data.filter(d => d.row_number == 3);
+                fourth = data.filter(d => d.row_number == 4);
+                five = data.filter(d => d.row_number == 5);
                 selectArtists(t, numOfSelectedArtists);
                 timing = setInterval(selectArtists, intervalTime, t, numOfSelectedArtists);
 
@@ -574,8 +514,8 @@ function selectArtistsThenDraw(data) {
 
     let timeButtonText,
         artistsButtonText,
-        t = 500,
-        intervalTime = 1000,
+        t = 1000,
+        intervalTime = 5000,
         numOfSelectedArtists = 60;
 
     selectArtists(t, numOfSelectedArtists);
@@ -588,10 +528,11 @@ function selectArtistsThenDraw(data) {
         clearInterval(timing);
         numOfArtists = data.length;
         numOfArtistsArr = [...Array(numOfArtists).keys()]
-        first = data.filter(d => d.row_number == 0);
-        second = data.filter(d => d.row_number == 1);
-        third = data.filter(d => d.row_number == 2);
-        fourth = data.filter(d => d.row_number == 3);
+        first = data.filter(d => d.row_number == 1);
+        second = data.filter(d => d.row_number == 2);
+        third = data.filter(d => d.row_number == 3);
+        fourth = data.filter(d => d.row_number == 4);
+        five = data.filter(d => d.row_number == 5);
         selectedDataset = [];
         timeCount = 0;
         const selButton = timeButtons.nodes()[i];
@@ -604,10 +545,11 @@ function selectArtistsThenDraw(data) {
         clearInterval(timing);
         numOfArtists = data.length;
         numOfArtistsArr = [...Array(numOfArtists).keys()]
-        first = data.filter(d => d.row_number == 0);
-        second = data.filter(d => d.row_number == 1);
-        third = data.filter(d => d.row_number == 2);
-        fourth = data.filter(d => d.row_number == 3);
+        first = data.filter(d => d.row_number == 1);
+        second = data.filter(d => d.row_number == 2);
+        third = data.filter(d => d.row_number == 3);
+        fourth = data.filter(d => d.row_number == 4);
+        five = data.filter(d => d.row_number == 5);
         selectedDataset = [];
         timeCount = 0;
         const selButton = numOfArtistsButtons.nodes()[i];
@@ -624,29 +566,37 @@ function drawBackBone(dataset) {
     // SCALES //
     ////////////
     const xScaleText = d3.scalePoint()
-        .domain(list)
+        .domain(rankingList)
         .range([0, boundedwidth]);
 
     const yScale = d3.scaleLinear()
         .domain([1, d3.max(dataset, d => +d.number)])
         .range([margin.top, boundedheight - margin.bottom]);
 
+    const columnPadding = textwidth / 2;
+    const columnWidth = (boundedwidth - columnPadding * (rankingList.length)  * 2) / (numOfColumns);
+
     const xScaleOne = d3.scalePoint()
-        .domain([list[0], list[1]])
-        .range([textwidth / 2, ((boundedwidth / 2 - textwidth) / 2)])
+        .domain([rankingList[0], rankingList[1]])
+        .range([columnPadding / 2, (columnWidth + columnPadding * 2)])
 
     const xScaleTwo = d3.scalePoint()
-        .domain([list[1], list[2]])
-        .range([((boundedwidth / 2 - textwidth) / 2 + textwidth), (boundedwidth / 2 - textwidth / 2)])
+        .domain([rankingList[1], rankingList[2]])
+        .range([(columnWidth + columnPadding * 3), (columnWidth * 2 + columnPadding * 4)])
 
     const xScaleThree = d3.scalePoint()
-        .domain([list[2], list[3]])
-        .range([(boundedwidth / 2 + textwidth / 2), ((boundedwidth / 2 - textwidth) / 2 + boundedwidth / 2)])
+        .domain([rankingList[2], rankingList[3]])
+        .range([(columnWidth * 2 + columnPadding * 5.5), (columnWidth * 3 + columnPadding * 6.5)])
 
     const xScaleFour = d3.scalePoint()
-        .domain([list[3], list[4]])
-        .range([((boundedwidth / 2 - textwidth) / 2 + boundedwidth / 2 + textwidth), (boundedwidth - textwidth / 2)])
+        .domain([rankingList[3], rankingList[4]])
+        .range([(columnWidth * 3 + columnPadding * 8), (columnWidth * 4 + columnPadding * 9)])
 
+    const xScaleFive = d3.scalePoint()
+        .domain([rankingList[4], rankingList[5]])
+        .range([(columnWidth * 4 + columnPadding * 10), (columnWidth * 5 + columnPadding * 11.5)])
+
+    
     fontSizeScale = d3.scaleLinear()
         .domain(d3.extent(dataset, d => +d.number))
         .range([2, 0.5])
@@ -656,21 +606,27 @@ function drawBackBone(dataset) {
     ////////////////////
     const texts = chart.append("g");
     texts.selectAll("text")
-        .data(dataset, d => d.artist)
+        .data(dataset, d => d.Artist)
         .enter().append("text")
         .attr("class", d => {
-            if (d.type == list[2]) {
-                return "center-axis-text";
+            switch(d.type){
+                case rankingList[2]:
+                case rankingList[3]:
+                    return "center-axis-text";
+                    break;
             }
         })
         .attr("id", d => {
-            if (d.type == list[2]) {
-                return `${formatName(d.artist)}-text`
+            switch(d.type){
+                case rankingList[2]:
+                case rankingList[3]:
+                    return `${formatName(d.Artist)}-text`
+                    break;
             }
         })
         .attr("x", d => xScaleText(d.type))
         .attr("y", d => yScale(+d.number))
-        .text(d => d.artist)
+        .text(d => d.Artist)
         .attr("font-size", d => {
             return fontSizeScale(+d.number)
         })
@@ -699,33 +655,24 @@ function drawBackBone(dataset) {
         .x(d => xScaleFour(d.type))
         .y(d => yScale(+d.number))
 
-    const groupedData = d3.nest()
-        .key(d => d.artist)
-        .entries(dataset);
+    lineGeneratorFive = d3.linkHorizontal()
+        .x(d => xScaleFive(d.type))
+        .y(d => yScale(+d.number))
 
+    const groupedData = d3.nest()
+        .key(d => d.Artist)
+        .entries(dataset);
+    
     groupedData.forEach((row, index) => {
-        switch (index % 4) {
-            case 0:
-                row.row_number = 0;
-                break
-            case 1:
-                row.row_number = 1;
-                break
-            case 2:
-                row.row_number = 2;
-                break
-            default:
-                row.row_number = 3;
-                break
+        for (let i = 0; i < numOfColumns; i++) {
+            if (index % numOfColumns == i) {
+                row.row_number = i + 1;
+            }
         }
     })
-
     return groupedData;
 }
 
 d3.csv("../data/d3_structured_artist_rankings_united.csv")
     .then(drawBackBone)
     .then(selectArtistsThenDraw);
-
-// d3.json("../data/grouped-with-curve-number.json")
-//     .then(selectArtistsThenDraw);
