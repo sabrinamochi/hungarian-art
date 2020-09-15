@@ -54,6 +54,7 @@ const curveTextsGroup = chart.append("g");
 ////////////////////
 
 const formatName = (data) => {
+    
     return data.replace(" ", "-")
         .replace(".", "-")
         .replace("(", "-")
@@ -64,6 +65,7 @@ const formatName = (data) => {
 }
 
 function selectArtistsThenDraw(data) {
+
     let first = data.filter(d => d.row_number == 0);
     let second = data.filter(d => d.row_number == 1);
     let third = data.filter(d => d.row_number == 2);
@@ -328,20 +330,20 @@ function selectArtistsThenDraw(data) {
             function returnSourceTarget(data) {
                 const newData = [];
                 const nested = d3.nest()
-                    .key(d => d.artist)
+                    .key(d => d.Artist)
                     .entries(data)
 
                 for (let i = 0; i < nested.length; i++) {
                     const obj = nested[i].values;
                     newData.push({
                         source: {
-                            name: obj[0].artist,
+                            name: obj[0].Artist,
                             number: obj[0].number,
                             type: obj[0].type,
                             row_number: obj[0].row_number
                         },
                         target: {
-                            name: obj[1].artist,
+                            name: obj[1].Artist,
                             number: obj[1].number,
                             type: obj[1].type,
                             row_number: obj[1].row_number
@@ -354,20 +356,20 @@ function selectArtistsThenDraw(data) {
             function returnSourceTarget2(data) {
                 const newData = [];
                 const nested = d3.nest()
-                    .key(d => d.artist)
+                    .key(d => d.Artist)
                     .entries(data)
 
                 for (let i = 0; i < nested.length; i++) {
                     const obj = nested[i].values;
                     newData.push({
                         source: {
-                            name: obj[1].artist,
+                            name: obj[1].Artist,
                             number: obj[1].number,
                             type: obj[1].type,
                             row_number: obj[1].row_number
                         },
                         target: {
-                            name: obj[0].artist,
+                            name: obj[0].Artist,
                             number: obj[0].number,
                             type: obj[0].type,
                             row_number: obj[0].row_number
@@ -382,7 +384,7 @@ function selectArtistsThenDraw(data) {
             const lineTwoLinks = returnSourceTarget(lineTwoData);
             const lineThreeLinks = returnSourceTarget(lineThreeData);
             const lineFourLinks = returnSourceTarget2(lineFourData);
-
+       
             const linesOne = linesOneGroup.selectAll(".one")
                 .data(lineOneLinks, (d, i) => d.source.name);
 
@@ -473,7 +475,7 @@ function selectArtistsThenDraw(data) {
         drawChart(newFlatData);
 
         let curveTexts = curveTextsGroup.selectAll("text")
-            .data(newFlatData.filter((d, i) => i % 5 == 0), (q) => q.artist)
+            .data(newFlatData.filter((d, i) => i % 5 == 0), (q) => q.Artist)
 
         curveTextsEnter = curveTexts.enter()
             .append("text")
@@ -482,12 +484,12 @@ function selectArtistsThenDraw(data) {
         curveTextsEnter.append("textPath")
                 .attr("xlink:href", (d, i) => {
                     const lineNum = +d.row_number + 1;
-                    return `#${formatName(d.artist)}-for-curves-${lineNum}`
+                    return `#${formatName(d.Artist)}-for-curves-${lineNum}`
                 })
                 .attr("startOffset", "2%")
                 .style("text-anchor", "start")
                 .text((d, i) => {
-                    return d.artist
+                    return d.Artist
                 })
                 .attr("font-size", 8)
                 // .attr("opacity", 0)
@@ -525,7 +527,7 @@ function selectArtistsThenDraw(data) {
 
                 drawChart(completeFlatData)
 
-                const sel = d.artist;
+                const sel = d.Artist;
                 d3.selectAll("path")
                     .attr("opacity", e => {
                         if (e.source.name == sel) {
@@ -542,7 +544,7 @@ function selectArtistsThenDraw(data) {
                         }
                     })
 
-                d3.select(`#${formatName(d.artist)}-text`)
+                d3.select(`#${formatName(d.Artist)}-text`)
                     .attr("font-size", 15)
                     .attr("opacity", opac);
 
@@ -575,7 +577,7 @@ function selectArtistsThenDraw(data) {
     let timeButtonText,
         artistsButtonText,
         t = 500,
-        intervalTime = 1000,
+        intervalTime = 50,
         numOfSelectedArtists = 60;
 
     selectArtists(t, numOfSelectedArtists);
@@ -619,7 +621,6 @@ function selectArtistsThenDraw(data) {
 }
 
 function drawBackBone(dataset) {
-
     /////////////
     // SCALES //
     ////////////
@@ -656,7 +657,7 @@ function drawBackBone(dataset) {
     ////////////////////
     const texts = chart.append("g");
     texts.selectAll("text")
-        .data(dataset, d => d.artist)
+        .data(dataset, d => d.Artist)
         .enter().append("text")
         .attr("class", d => {
             if (d.type == list[2]) {
@@ -665,12 +666,12 @@ function drawBackBone(dataset) {
         })
         .attr("id", d => {
             if (d.type == list[2]) {
-                return `${formatName(d.artist)}-text`
+                return `${formatName(d.Artist)}-text`
             }
         })
         .attr("x", d => xScaleText(d.type))
         .attr("y", d => yScale(+d.number))
-        .text(d => d.artist)
+        .text(d => d.Artist)
         .attr("font-size", d => {
             return fontSizeScale(+d.number)
         })
@@ -700,26 +701,16 @@ function drawBackBone(dataset) {
         .y(d => yScale(+d.number))
 
     const groupedData = d3.nest()
-        .key(d => d.artist)
+        .key(d => d.Artist)
         .entries(dataset);
-
+    
     groupedData.forEach((row, index) => {
-        switch (index % 4) {
-            case 0:
-                row.row_number = 0;
-                break
-            case 1:
-                row.row_number = 1;
-                break
-            case 2:
-                row.row_number = 2;
-                break
-            default:
-                row.row_number = 3;
-                break
+        for (let i = 0; i < 5; i++) {
+            if (index % 5 == i) {
+                row.row_number = i;
+            }
         }
     })
-
     return groupedData;
 }
 
