@@ -11,58 +11,9 @@ h1 {
     word-spacing: 8px;
 }
 
-.separate {
-    height: 10vh;
-    width: 100%;
-}
-
 #chart {
     position: relative;
     text-align: center;
-}
-
-.text-block {
-    /* position: absolute;
-    top: 0;
-    left: 0; */
-    width: 100%;
-    text-align: center;
-}
-
-.first-x, .sec-x, .third-x, .fourth-x, .fifth-x{
-    display: inline-block;
-    position: absolute;
-    font-size: 14px;
-}
-
-.legend{
-    margin-left: 10%;
-}
-
-ul {
-    list-style: none;
-    font-size: 20px;
-    padding-left: 0;
-}
-
-li > span {
-    width: 15px;
-    height: 15px;
-    display: inline-block;
-    margin: 2px;
-    transform: translate(50%, 20%);
-}
-
-#increased {
-    background: #58a4b0;
-}
-
-#decreased {
-    background: #373f51;
-}
-
-#flat {
-    background:#a9bcd0;
 }
 
 svg text {

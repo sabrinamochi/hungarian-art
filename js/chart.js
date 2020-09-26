@@ -1,4 +1,3 @@
-const svg = d3.select("svg");
 const width = window.innerWidth * 0.85;
 const height = window.innerWidth * 5 * 0.85 / (7.57);
 const margin = {
@@ -7,8 +6,6 @@ const margin = {
     bottom: 0,
     left: 10
 }
-
-
 const boundedwidth = width - margin.left - margin.right;
 const boundedheight = height - margin.top - margin.bottom;
 const innermargin = 10;
@@ -24,38 +21,38 @@ const x3 = "CRank"
 const x4 = "prestige_rank";
 const x5 = "exhibitions_total_rank";
 const x6 = "exhibitions_solo_rank";
-
 const rankingList = [x1, x2, x3, x4, x5, x6];
+
+
+const svg = d3.select("svg");
 svg.attr("width", width)
     .attr("height", height);
 
 const chart = svg.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-let lineGeneratorOne,
-    lineGeneratorTwo,
-    lineGeneratorThree,
-    lineGeneratorFour,
-    lineGeneratorFive,
-    fontSizeScale;
+let fontSizeScale;
    
 
 
 ////////////////////////////////////////
 // Groups for lines and curved texts //
 ///////////////////////////////////////
-const lineGroups = [];
+const xScales = [], 
+      lineGenerators = [],
+      lineGroups = [];
+
 for (let i = 0; i < numOfColumns; i++){
-    lineGroups[i] = chart.append("g"); 
+    xScales[i] = d3.scalePoint();
+    lineGenerators[i] = d3.linkHorizontal();
+    lineGroups[i] = chart.append("g");  
 }
 
 const curveTextsGroup = chart.append("g");
 
-
 /////////////////////
 // NAME FORMATTER //
 ////////////////////
-
 const formatName = (data) => {
     return data.replace(" ", "-")
         .replace(".", "-")
@@ -66,37 +63,33 @@ const formatName = (data) => {
         .replace(",", "-");
 }
 
-
-
 function selectArtistsThenDraw(dataset) {
-    const difference = 30;
-    let del, delTimes, labelPositionArray;
+    // minimal gap between the position of each artist
+    const difference = 30; 
 
-    let data = dataset;
-    let numOfArtists = data.length;
-    let numOfArtistsArr = [...Array(numOfArtists).keys()]
+    let del, delTimes, labelPositionArray,
+        data = dataset,
+        numOfArtists = data.length,
+        numOfArtistsArr = [...Array(numOfArtists).keys()];
 
+    // timeCount would be zero when selecting the first 60 artists
     let timeCount = 0;    
 
+    // empty a 1 x 10 array every time when refreshing the vis
     const empty = () => {
         labelPositionArray = [[], [], [], [], [],
                               [], [], [], [], []]
     }
-
     empty();
 
     function pickAPosition(artist){
         
-        let chance;
-        let ranking;
-        let sel;
-        let selArray;
-        let selArrIndex;
-        let choose = true;
-        let findTimes = 0;
+        let chance, ranking, 
+            sel, selArray, selArrIndex,
+            choose = true,
+            findTimes = 0; // if find time is more than 3, pick another artist
 
         if (typeof del !== "undefined" && delTimes == 0){
-            // console.log(del)
             for (let [i, arr] of labelPositionArray.entries()) {
                 if(i%2 == 0){
                     if (del.row_number == i/2 && del.scatter_number == 0){
@@ -191,6 +184,7 @@ function selectArtistsThenDraw(dataset) {
         console.log(numOfArtistsArr.length)
         if (numOfArtistsArr.length > 1) {
             if (timeCount == 0) {
+                // first 60 artists
                 del = "undefined";
                 selectedArtists = getUniqueArtists(artistNum);
                 for (let i = 0, len = selectedArtists.length; i < len; i++) {
@@ -219,8 +213,7 @@ function selectArtistsThenDraw(dataset) {
         timeCount += 1;
 
         const newFlatData = selectedArtists.reduce(
-            (arr, elem) => {
-        
+            (arr, elem) => { 
                 for (const c of elem.values) {
                     c.row_number = elem.row_number;
                     c.scatter_number = elem.scatter_number;
@@ -235,32 +228,7 @@ function selectArtistsThenDraw(dataset) {
 
             d3.selectAll(".curve-texts").remove();
             d3.selectAll("path").remove();
-
-            const lineOneData = dataInput.filter(d => {
-                return d.type == rankingList[0] ||
-                    d.type == rankingList[1]
-            })
-
-            const lineTwoData = dataInput.filter(d => {
-                return d.type == rankingList[1] ||
-                    d.type == rankingList[2]
-            })
-
-            const lineThreeData = dataInput.filter(d => {
-                return d.type == rankingList[2] ||
-                    d.type == rankingList[3]
-            })
-
-            const lineFourData = dataInput.filter(d => {
-                return d.type == rankingList[3] ||
-                    d.type == rankingList[4]
-            })
-
-            const lineFiveData = dataInput.filter(d => {
-                return d.type == rankingList[4] ||
-                    d.type == rankingList[5]
-            })
-
+            
             function returnSourceTarget(data) {
                 const newData = [];
                 const nested = d3.nest()
@@ -289,119 +257,36 @@ function selectArtistsThenDraw(dataset) {
                 return newData;
             }
 
+            const lineData = [],
+                lineLinks = [],
+                lines = [];
 
-            const lineOneLinks = returnSourceTarget(lineOneData);
-            const lineTwoLinks = returnSourceTarget(lineTwoData);
-            const lineThreeLinks = returnSourceTarget(lineThreeData);
-            const lineFourLinks = returnSourceTarget(lineFourData);
-            const lineFiveLinks = returnSourceTarget(lineFiveData);
+            for (let i = 0; i < numOfColumns; i++){
+                lineData[i] = dataInput.filter(d => {
+                    return d.type == rankingList[i] ||
+                        d.type == rankingList[i+1]
+                })
+                
+                lineLinks[i] = returnSourceTarget(lineData[i]);
+        
+                lines[i] = lineGroups[i].selectAll(`.line${i}`)
+                    .data(lineLinks[i], d => d.source.name);
 
-            const linesOne = lineGroups[0].selectAll(".one")
-                .data(lineOneLinks, (d, i) => d.source.name);
+                lines[i].enter().append("path")
+                    .attr('id', d => `${formatName(d.source.name)}-for-curves-${i}`)
+                    .attr('d', lineGenerators[i])
+                    .attr('class', `line${i}`)
+                    .attr("fill", "none")
+                    .attr("stroke-width", strokewidth)
+                    .attr("stroke-linejoin", "round")
+                    .attr("stroke-linecap", "round")
+                    .attr("stroke", "#70c1b3")
+                    .attr("opacity", opac)
 
-            linesOne.enter().append("path")
-                .attr('id', d => `${formatName(d.source.name)}-for-curves-1`)
-                .attr('d', lineGeneratorOne)
-                .attr('class', 'one')
-                .attr("fill", "none")
-                .attr("stroke-width", strokewidth)
-                .attr("stroke-linejoin", "round")
-                .attr("stroke-linecap", "round")
-                .attr("stroke", "#70c1b3")
-                // .transition().duration(time)
-                .attr("opacity", opac)
+                lines[i].exit()
+                    .remove()
 
-
-            linesOne.exit()
-                // .transition().duration(time / 2)
-                // .attr("opacity", 0)
-                .remove()
-
-            const linesTwo = lineGroups[1].selectAll(".two")
-                .data(lineTwoLinks, (d, i) => d.source.name);
-
-            linesTwo.enter().append("path")
-                .attr('id', d => `${formatName(d.source.name)}-for-curves-2`)
-                .attr('d', lineGeneratorTwo)
-                .attr('class', 'two')
-                .attr("fill", "none")
-                .attr("stroke-width", strokewidth)
-                .attr("stroke-linejoin", "round")
-                .attr("stroke-linecap", "round")
-                .attr("stroke", "#70c1b3")
-                // .transition().duration(time)
-                .attr("opacity", opac)
-
-
-            linesTwo.exit()
-                // .transition().duration(time / 2)
-                // .attr("opacity", 0)
-                .remove()
-
-
-            const linesThree = lineGroups[2].selectAll(".three")
-                .data(lineThreeLinks, (d, i) => d.source.name);
-
-            linesThree.enter().append("path")
-                .attr('id', d => `${formatName(d.source.name)}-for-curves-3`)
-                .attr('d', lineGeneratorThree)
-                .attr('class', 'three')
-                .attr("fill", "none")
-                .attr("stroke-width", strokewidth)
-                .attr("stroke-linejoin", "round")
-                .attr("stroke-linecap", "round")
-                .attr("stroke", "#70c1b3")
-                // .transition().duration(time)
-                .attr("opacity", opac)
-
-
-            linesThree.exit()
-                // .transition().duration(time / 2)
-                // .attr("opacity", 0)
-                .remove()
-
-
-            const linesFour = lineGroups[3].selectAll(".four")
-                .data(lineFourLinks, (d, i) => d.source.name);
-
-            linesFour.enter().append("path")
-                .attr('id', d => `${formatName(d.source.name)}-for-curves-4`)
-                .attr('d', lineGeneratorFour)
-                .attr('class', 'four')
-                .attr("fill", "none")
-                .attr("stroke-width", strokewidth)
-                .attr("stroke-linejoin", "round")
-                .attr("stroke-linecap", "round")
-                .attr("stroke", "#70c1b3")
-                // .transition().duration(time)
-                .attr("opacity", opac)
-
-
-            linesFour.exit()
-                // .transition().duration(time / 2)
-                // .attr("opacity", 0)
-                .remove()
-
-            const linesFive = lineGroups[4].selectAll(".five")
-                .data(lineFiveLinks, (d, i) => d.source.name);
-
-            linesFive.enter().append("path")
-                .attr('id', d => `${formatName(d.source.name)}-for-curves-5`)
-                .attr('d', lineGeneratorFive)
-                .attr('class', 'five')
-                .attr("fill", "none")
-                .attr("stroke-width", strokewidth)
-                .attr("stroke-linejoin", "round")
-                .attr("stroke-linecap", "round")
-                .attr("stroke", "#70c1b3")
-                // .transition().duration(time)
-                .attr("opacity", opac)
-
-
-            linesFive.exit()
-                // .transition().duration(time / 2)
-                // .attr("opacity", 0)
-                .remove()
+            }
         }
 
         drawChart(newFlatData);
@@ -417,7 +302,7 @@ function selectArtistsThenDraw(dataset) {
 
         curveTextsEnter.append("textPath")
                 .attr("xlink:href", (d, i) => {
-                        return `#${formatName(d.Artist)}-for-curves-${+d.row_number+1}`    
+                        return `#${formatName(d.Artist)}-for-curves-${+d.row_number}`    
                     })
                 .attr("startOffset", d => {
                     if (+d.scatter_number == 0){
@@ -433,20 +318,12 @@ function selectArtistsThenDraw(dataset) {
                         return "end"
                     }
                 })
-                .text((d, i) => {
-                    return d.Artist
-                })
+                .text(d => d.Artist)
                 .attr("font-size", 8)
-                .attr("opacity", 0)
-                // .transition().duration(time)
-                .attr("opacity", 1)
 
             curveTexts.exit()
-                // .transition().delay(time / 2).duration(time)
-                // .attr("opacity", 0)
                 .remove()
 
-        // })
 
         d3.selectAll("text.axis-text")
             .style("cursor", "pointer")
@@ -470,7 +347,6 @@ function selectArtistsThenDraw(dataset) {
                 );
 
                 //   console.log(completeFlatData)
-
                 drawChart(completeFlatData)
 
                 const sel = d.Artist;
@@ -560,28 +436,7 @@ function drawBackBone(dataset) {
 
     const columnPadding = textwidth / 2;
     const columnWidth = (boundedwidth - columnPadding * (rankingList.length)  * 2) / (numOfColumns);
-
-    const xScaleOne = d3.scalePoint()
-        .domain([rankingList[0], rankingList[1]])
-        .range([columnPadding / 2, (columnWidth + columnPadding * 2)])
-
-    const xScaleTwo = d3.scalePoint()
-        .domain([rankingList[1], rankingList[2]])
-        .range([(columnWidth + columnPadding * 3), (columnWidth * 2 + columnPadding * 4)])
-
-    const xScaleThree = d3.scalePoint()
-        .domain([rankingList[2], rankingList[3]])
-        .range([(columnWidth * 2 + columnPadding * 5.5), (columnWidth * 3 + columnPadding * 6.5)])
-
-    const xScaleFour = d3.scalePoint()
-        .domain([rankingList[3], rankingList[4]])
-        .range([(columnWidth * 3 + columnPadding * 8), (columnWidth * 4 + columnPadding * 9)])
-
-    const xScaleFive = d3.scalePoint()
-        .domain([rankingList[4], rankingList[5]])
-        .range([(columnWidth * 4 + columnPadding * 10), (columnWidth * 5 + columnPadding * 11.5)])
-
-    
+   
     fontSizeScale = d3.scaleLinear()
         .domain(d3.extent(dataset, d => +d.number))
         .range([2, 0.5])
@@ -608,7 +463,6 @@ function drawBackBone(dataset) {
         .attr("font-size", d => {
             return fontSizeScale(+d.number)
         })
-        .attr("font-family", "helvetica")
         .attr("text-anchor", "middle")
         .attr("opacity", opac / 2);
 
@@ -616,26 +470,27 @@ function drawBackBone(dataset) {
     //////////////////////
     // Line Generators //
     ////////////////////
-
-    lineGeneratorOne = d3.linkHorizontal()
-        .x(d => xScaleOne(d.type))
-        .y(d => yScale(+d.number))
-
-    lineGeneratorTwo = d3.linkHorizontal()
-        .x(d => xScaleTwo(d.type))
-        .y(d => yScale(+d.number))
-
-    lineGeneratorThree = d3.linkHorizontal()
-        .x(d => xScaleThree(d.type))
-        .y(d => yScale(+d.number))
-
-    lineGeneratorFour = d3.linkHorizontal()
-        .x(d => xScaleFour(d.type))
-        .y(d => yScale(+d.number))
-
-    lineGeneratorFive = d3.linkHorizontal()
-        .x(d => xScaleFive(d.type))
-        .y(d => yScale(+d.number))
+    for (let i = 0; i < numOfColumns; i++){
+        if (i == 0) {
+            xScales[i].domain([rankingList[0], rankingList[1]])
+            .range([columnPadding / 2, (columnWidth + columnPadding * 2)]);
+        } else if (i == 1){
+            xScales[i].domain([rankingList[1], rankingList[2]])
+            .range([(columnWidth + columnPadding * 3), (columnWidth * 2 + columnPadding * 4)])
+        } else if (i == 2){
+            xScales[i].domain([rankingList[2], rankingList[3]])
+            .range([(columnWidth * 2 + columnPadding * 5.5), (columnWidth * 3 + columnPadding * 6.5)])
+        } else if (i == 3){
+            xScales[i].domain([rankingList[3], rankingList[4]])
+            .range([(columnWidth * 3 + columnPadding * 8), (columnWidth * 4 + columnPadding * 9)])
+        } else {
+            xScales[i].domain([rankingList[4], rankingList[5]])
+        .range([(columnWidth * 4 + columnPadding * 10), (columnWidth * 5 + columnPadding * 11.5)])
+        }
+        lineGenerators[i]
+            .x(d => xScales[i](d.type))
+            .y(d => yScale(+d.number))
+    }
 
     const groupedData = d3.nest()
         .key(d => d.Artist)
@@ -649,6 +504,7 @@ function drawBackBone(dataset) {
     return groupedData;
 }
 
+// Load the data 
 d3.csv("../data/d3_structured_artist_rankings_united.csv")
     .then(drawBackBone)
     .then(selectArtistsThenDraw);
