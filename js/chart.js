@@ -505,6 +505,6 @@ function drawBackBone(dataset) {
 }
 
 // Load the data 
-d3.csv("../data/d3_structured_artist_rankings_united.csv")
+d3.csv("./data/d3_structured_artist_rankings_united.csv")
     .then(drawBackBone)
     .then(selectArtistsThenDraw);
