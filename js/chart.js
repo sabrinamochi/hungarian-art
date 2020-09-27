@@ -268,7 +268,7 @@ function selectArtistsThenDraw(dataset) {
                 })
                 
                 lineLinks[i] = returnSourceTarget(lineData[i]);
-        
+                
                 lines[i] = lineGroups[i].selectAll(`.line${i}`)
                     .data(lineLinks[i], d => d.source.name);
 
