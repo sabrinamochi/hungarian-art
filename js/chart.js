@@ -1,5 +1,5 @@
-const width = window.innerWidth * 0.85;
-const height = window.innerWidth * 5 * 0.85 / (7.57);
+const width = window.innerWidth * 0.9;
+const height = window.innerWidth * 5 * 0.95 / (7.57);
 const margin = {
     top: 8,
     right: 10,
@@ -72,7 +72,7 @@ function selectArtistsThenDraw(dataset) {
         numOfArtists = data.length,
         numOfArtistsArr = [...Array(numOfArtists).keys()];
 
-    // timeCount would be zero when selecting the first 60 artists
+    // timeCount would be zero when selecting the first 30 artists
     let timeCount = 0;    
 
     // empty a 1 x 10 array every time when refreshing the vis
@@ -184,7 +184,7 @@ function selectArtistsThenDraw(dataset) {
         console.log(numOfArtistsArr.length)
         if (numOfArtistsArr.length > 1) {
             if (timeCount == 0) {
-                // first 60 artists
+                // first 30 artists
                 del = "undefined";
                 selectedArtists = getUniqueArtists(artistNum);
                 for (let i = 0, len = selectedArtists.length; i < len; i++) {
@@ -319,7 +319,6 @@ function selectArtistsThenDraw(dataset) {
                     }
                 })
                 .text(d => d.Artist)
-                .attr("font-size", 8)
 
             curveTexts.exit()
                 .remove()
@@ -379,7 +378,7 @@ function selectArtistsThenDraw(dataset) {
                     .attr("font-size", e => {
                         return fontSizeScale(+e.number)
                     })
-                    .attr("opacity", opac / 2);
+                    .attr("opacity", opac);
 
                     clearInterval(timing)
                     data = dataset;
@@ -398,7 +397,7 @@ function selectArtistsThenDraw(dataset) {
     let timeButtonText,
         t = 1000,
         intervalTime = 3000,
-        numOfSelectedArtists = 60;
+        numOfSelectedArtists = 30;
 
     selectArtists(t, numOfSelectedArtists);
     var timing = setInterval(selectArtists, intervalTime, t, numOfSelectedArtists);
@@ -434,12 +433,12 @@ function drawBackBone(dataset) {
         .domain([1, d3.max(dataset, d => +d.number)])
         .range([margin.top, boundedheight - margin.bottom]);
 
-    const columnPadding = textwidth / 2;
+    const columnPadding = textwidth;
     const columnWidth = (boundedwidth - columnPadding * (rankingList.length)  * 2) / (numOfColumns);
    
     fontSizeScale = d3.scaleLinear()
         .domain(d3.extent(dataset, d => +d.number))
-        .range([2, 0.5])
+        .range([3, 1.5])
 
     /////////////////////
     // DRAW TEXT AXES //
@@ -464,7 +463,7 @@ function drawBackBone(dataset) {
             return fontSizeScale(+d.number)
         })
         .attr("text-anchor", "middle")
-        .attr("opacity", opac / 2);
+        .attr("opacity", opac);
 
 
     //////////////////////
@@ -476,16 +475,16 @@ function drawBackBone(dataset) {
             .range([columnPadding / 2, (columnWidth + columnPadding * 2)]);
         } else if (i == 1){
             xScales[i].domain([rankingList[1], rankingList[2]])
-            .range([(columnWidth + columnPadding * 3), (columnWidth * 2 + columnPadding * 4)])
+            .range([(columnWidth + columnPadding * 2.8), (columnWidth * 2 + columnPadding * 4.4)])
         } else if (i == 2){
             xScales[i].domain([rankingList[2], rankingList[3]])
-            .range([(columnWidth * 2 + columnPadding * 5.5), (columnWidth * 3 + columnPadding * 6.5)])
+            .range([(columnWidth * 2 + columnPadding * 5.2), (columnWidth * 3 + columnPadding * 6.8)])
         } else if (i == 3){
             xScales[i].domain([rankingList[3], rankingList[4]])
-            .range([(columnWidth * 3 + columnPadding * 8), (columnWidth * 4 + columnPadding * 9)])
+            .range([(columnWidth * 3 + columnPadding * 7.6), (columnWidth * 4 + columnPadding * 9.2)])
         } else {
             xScales[i].domain([rankingList[4], rankingList[5]])
-        .range([(columnWidth * 4 + columnPadding * 10), (columnWidth * 5 + columnPadding * 11.5)])
+        .range([(columnWidth * 4 + columnPadding * 10), (columnWidth * 5 + columnPadding * 11.6)])
         }
         lineGenerators[i]
             .x(d => xScales[i](d.type))

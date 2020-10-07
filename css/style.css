@@ -21,7 +21,15 @@ svg text {
     /* opacity: 0.5; */
 }
 
+.axis-text{
+    
+}
 
+.curve-texts{
+    font-size: 10px;
+}
+
+/* 
 .button-groups{
     display: flex;
     justify-content: center;
@@ -47,5 +55,5 @@ button {
     margin-right: 1em;
     border: lightgray;
     font-family: 'open sans';
-}
+} */
 
